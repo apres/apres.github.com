@@ -3,7 +3,7 @@
 // Licensed under the MIT license
 // https://github.com/visionmedia/node-querystring
 
-;(function(){
+define(function(require, exports, module) { // AMD Wrapper
 
 /**
  * Object#toString() ref for stringify().
@@ -256,4 +256,5 @@ function lastBraceInKey(str) {
     if ('=' == c && !brace) return i;
   }
 }
-})();
+
+}); // AMD Wrapper
