@@ -5,7 +5,10 @@ define(['jquery'], function($) {
 
   controller.ready = function() {
     document.title = 'Hello World!';
-    $('body').append('<p>Apres says: "Hello, World!"</p>');
+    $('body').prepend(
+      '<p title="This was inserted by the hello.js controller">' +
+      'Apres says: "Hello, World!"</p>'
+    );
   }
 
   return controller;
