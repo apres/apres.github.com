@@ -12,6 +12,8 @@ require.config({
     // This supports loading libraries from
     // CDN while loading app code from the app server host
     app: '/js/app',
+    // Core widgets map from /widget/foo to /js/widget/foo
+    widget: '/js/widget',
     // Core libs
     // apres: 'apres-dev',
     jquery: 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min',
@@ -30,11 +32,11 @@ require.config({
     async: 'require-plugins/async-0.1.1',
     depend: 'require-plugins/depend-0.1.0',
     font: 'require-plugins/font-0.2.0',
-    goog: 'require-plugins/goog-0.2.0',
+    google: 'require-plugins/goog-0.2.0',
     image: 'require-plugins/image-0.2.1',
     json: 'require-plugins/json-0.2.1',
     noext: 'require-plugins/noext-0.3.1',
-    mdown: 'require-plugins/mdown-0.1.1',
+    markdown: 'require-plugins/mdown-0.1.1',
     propertyParser: 'require-plugins/propertyParser-0.1.0',
     component: 'require-plugins/component-0.0.0'
   }
@@ -53,20 +55,14 @@ define('apres',
     var htmlElem = doc.getElementsByTagName('html')[0];
     if (typeof htmlElem !== 'undefined') {
       apres.controllerName = htmlElem.getAttribute('data-apres-controller');
-    } else {
-      apres.controllerName = doc.location.pathname;
-      if (apres.controllerName.slice(-1) === '/') {
-        var cfg = module.config();
-        apres.controllerName += (cfg && cfg.defaultDocument) || 'index.html';
-      }
     }
     apres.queryParams = querystring.parse(doc.location.search);
     var widgets = {};
     var widgetIdAttrName = 'data-apres-pvt-widget-id';
 
     // Get or install a widget object for an element
-    apres.widget = function(elem, widgetFactory, params) {
-      if (widgetFactory === null) {
+    apres.widget = function(elem, WidgetFactory, params) {
+      if (WidgetFactory === null) {
         var widgetId;
         if (elem.attr) {
           widgetId = elem.attr(widgetIdAttrName);
@@ -81,7 +77,7 @@ define('apres',
         do {
           id = Math.random().toString().slice(2);
         } while (widgets[id] !== null);
-        var widget = widgets[id] = widgetFactory(elem, params);
+        var widget = widgets[id] = WidgetFactory(elem, params);
         if (elem.attr) {
           elem.attr(widgetIdAttrName, id);
         } else {
@@ -92,10 +88,17 @@ define('apres',
     }
 
     var insertWidget = function(id, name, elem) {
-      require([name], function(widgetFactory) {
-          if (typeof widgetFactory === 'function') {
+      require([name], function(WidgetFactory) {
+          var i, params, paramName;
+          if (typeof WidgetFactory === 'function') {
             id = id.toString();
-            widgets[id] = widgetFactory(elem);
+            if (WidgetFactory.widgetParams) {
+              params = {};
+              for (i = 0; (paramName = WidgetFactory.widgetParams[i]); i++) {
+                params[paramName] = elem.getAttribute('data-widget-' + paramName);
+              }
+            }
+            widgets[id] = new WidgetFactory(elem, params);
             elem.setAttribute(widgetIdAttrName, id); 
           } else {
             console && console.error('Apres - widget module ' + name + ' did not return a function');
@@ -103,22 +106,25 @@ define('apres',
         }
       );
     }
+    var initView = function(controller) {
+      apres.controller = controller;
+      domReady(function() {
+          controller && controller.ready && controller.ready(apres.queryParams);
 
-    require([apres.controllerName], function(controller) {
-        apres.controller = controller;
-        domReady(function() {
-            controller.ready && controller.ready(apres.queryParams);
-
-            var widgets = doc.getElementsByClassName('widget');
-            var i, widgetElem;
-            for (i = 0; (widgetElem = widgets[i]); i++) {
-              var widgetName = widgetElem.getAttribute('data-widget');
-              widgetName && insertWidget(i, widgetName, widgetElem);
-            }
+          var widgets = doc.getElementsByClassName('widget');
+          var i, widgetElem;
+          for (i = 0; (widgetElem = widgets[i]); i++) {
+            var widgetName = widgetElem.getAttribute('data-widget');
+            widgetName && insertWidget(i, widgetName, widgetElem);
           }
-        );
-      }
-    );
+        }
+      );
+    }
+    if (apres.controllerName) {
+      require([apres.controllerName], initView);
+    } else {
+      initView();
+    }
 
     return apres;
   }
