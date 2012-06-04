@@ -16,8 +16,12 @@ define(
        * rendered into the widget element
        */
       this.src = function(url) {
-        if (url === null) {
+        if (typeof url === 'undefined') {
           return srcUrl;
+        } else if (!url) {
+          srcUrl = null;
+          markdownSrc = null;
+          elem.html('');
         } else if (url !== srcUrl) {
           srcUrl = url;
           // Use the require text plugin to fetch to allow
@@ -42,6 +46,7 @@ define(
         } else {
           elem.html('');
         }
+        srcUrl = null;
         markdownSrc = srcText;
       }
 
