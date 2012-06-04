@@ -1340,5 +1340,5 @@ var escapeCharacters_callback = function(wholeMatch,m1) {
 if (typeof exports != 'undefined') exports = Showdown;
 
 // All we need is the converter
-return Showdown.converter;
-]);
+return new Showdown.converter();
+});

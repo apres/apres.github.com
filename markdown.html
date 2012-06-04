@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" data-apres-controller="app/markdown">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <title></title>
+  <script data-main="/js/lib/apres-dev.js" src="/js/lib/require-1.0.8.js"></script>
+  <style>
+    h1,h2,h3,h4,h5,h6 {font-family: 'Helvetica Neue', Helvetica, sans-serif;}
+    #sourcelinks {border: 1px dotted gray; margin-top: 2em;}
+  </style>
+</head>
+<body>
+  <noscript>
+    <h1>Javascript Required</h1>
+    <p>Sorry, this page requires a javascript-enabled browser.</p>
+  </noscript>
+  <div id="inline-markdown" class="widget" data-widget="widget/markdown">
+    <!-- By default the markdown widget will search for an
+         enclosed <script type="text/x-markdown"> tag for its content. Using
+         the script tag prevents the browser from parsing and displaying the
+         raw markdown source text. -->
+    <script type="text/x-markdown">
+# Markdown Widget #
+
+The markdown widget allows you to easily render [markdown][md] formatted
+text as html. It has the following features:
+
+  [md]: http://daringfireball.net/projects/markdown/
+
+- Markdown text can be included inline in your html (as this is)
+- Markdown text can be included from a separate text file.
+- Source text or url can be changed dynamically to render different
+  markdown text on demand.
+    </script>
+  </div>
+  <button id="add-markdown">Add Markdown From a Separate File</button>
+  <div id="included-markdown"></div>
+  <div id="sourcelinks" class="widget" data-widget="app/sourcelinks"></div>
+</body>
+</html>

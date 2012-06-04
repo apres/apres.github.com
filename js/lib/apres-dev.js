@@ -46,7 +46,7 @@ define('apres',
   ['require', 'module', 'querystring', 'domReady'],
   function(require, module, querystring, domReady) {
     var apres  = {};
-    apres.VERSION = '0.0.0';
+    apres.VERSION = 'dev';
 
     // Find controller for this view
     // First look for a data-apres-controller attribute on the <html> tag
