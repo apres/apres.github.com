@@ -25,6 +25,7 @@ require.config({
     CoffeeScript: 'coffeescript-1.3.3',
     querystring: 'querystring-0.5.0',
     handlebars: 'handlebars-1.0.0.beta.6',
+    highlight: 'highlight-7.0',
     // Requirejs plugins
     text: 'require-plugins/text-1.0.8',
     cs: 'require-plugins/cs-0.4.0',
@@ -56,7 +57,7 @@ define('apres',
     if (typeof htmlElem !== 'undefined') {
       apres.controllerName = htmlElem.getAttribute('data-apres-controller');
     }
-    apres.queryParams = querystring.parse(doc.location.search);
+    apres.queryParams = querystring.parse(doc.location.search.slice(1));
     var widgets = {};
     var widgetIdAttrName = 'data-apres-pvt-widget-id';
 
