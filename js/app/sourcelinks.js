@@ -7,9 +7,9 @@ define(
     // Compile a template to generate html for the widget to insert
     var template = handlebars.compile(
       '<ul>' +
-      '<li><a href="view-source:{{documentUrl}}">view page source</a></li>' +
-      '<li><a href="{{controllerUrl}}">view controller source</a></li>' +
-      '{{#each widgets}}<li><a href="{{url}}">{{name}} widget source</a></li>{{/each}}' +
+      '<li><a href="/viewsource.html?url={{documentUrl}}">view page source</a></li>' +
+      '<li><a href="/viewsource.html?url={{controllerUrl}}">view controller source</a></li>' +
+      '{{#each widgets}}<li><a href="/viewsource.html?url={{url}}">{{name}} widget source</a></li>{{/each}}' +
       '</ul>'
     );
 
@@ -19,7 +19,7 @@ define(
     return function(elem) {
       // Setup the context data for rendering the template for this page
       var context = {
-        documentUrl: document.location.href,
+        documentUrl: document.location.pathname,
         controllerUrl: require.toUrl(apres.controllerName),
         widgets: []
       };
