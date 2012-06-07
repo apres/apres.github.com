@@ -19,7 +19,7 @@ test('#helpExpress', function(done) {
   app.listen(port);
   // Query
   request({
-    uri: 'http://localhost:' + port + '/apres/package.json'
+    uri: 'http://localhost:' + port + '/apres/js/lib/apres-dev.js'
   }, function(e, r, b) {
     if (e) throw e;
     assert.equal(r.statusCode, 200);

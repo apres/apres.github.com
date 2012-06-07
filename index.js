@@ -25,14 +25,14 @@ exports.helpExpress = function (app) {
   // This is kind of a hack for apres not being a dependency of itself at the moment.
   if (basePath.indexOf('node_modules') === -1) {
     var staticServer = express.static(basePath);
-    app.get('/apres/:file', function(req, res, next) {
+    app.get('/apres/*', function(req, res, next) {
       req.url = req.url.slice("/apres".length, req.url.length);
       staticServer(req, res, next);
     });
   } else {
     basePath = path.dirname(basePath);
     var staticServer = express.static(basePath);
-    app.get('/apres/:file', function(req, res, next) {
+    app.get('/apres/*', function(req, res, next) {
       staticServer(req, res, next);
     });
   }
