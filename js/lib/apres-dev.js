@@ -5,7 +5,7 @@
 /* global require, document */
 
 // Setup default Apres require config
-require.config({
+requirejs.config({
   paths: {
     // Application modules are accessed as: app/mymodule
     // which maps to the site relative path: /js/app/mymodule.js
@@ -26,6 +26,7 @@ require.config({
     querystring: 'querystring-0.5.0',
     handlebars: 'handlebars-1.0.0.beta.6',
     highlight: 'highlight-7.0',
+    chai: 'chai-1.0.4',
     // Requirejs plugins
     text: 'require-plugins/text-1.0.8',
     cs: 'require-plugins/cs-0.4.0',
@@ -49,84 +50,131 @@ define('apres',
     var apres  = {};
     apres.VERSION = 'dev';
 
-    // Find controller for this view
-    // First look for a data-apres-controller attribute on the <html> tag
-    // failing that, look for a module peer to the html page
-    var doc = document || require.document; // Allow tests to inject document
-    var htmlElem = doc.getElementsByTagName('html')[0];
-    if (typeof htmlElem !== 'undefined') {
-      apres.controllerName = htmlElem.getAttribute('data-apres-controller');
+    // Backbone-style event delegation
+    var eventSplitter = /^(\S+)\s*(.*)$/;
+    apres.delegate = function(events, elem, bindee) {
+      bindee || (bindee = events);
+      elem || (elem = bindee.elem);
+      events.events && (events = events.events);
+      if (typeof events === 'function') events = events();
+      if (events) {
+        for (var key in events) {
+          var method = events[key];
+          if (typeof method !== 'function') method = bindee[method];
+          if (typeof method !== 'function') throw new Error('No method named "' + events[key] + '"');
+          var match = key.match(eventSplitter);
+          var eventName = match[1], selector = match[2];
+          method = method.bind(bindee);
+          if (selector) {
+            elem.delegate(selector, eventName, method);
+          } else {
+            elem.bind(eventName, method);
+          }
+        }
+      }
     }
-    apres.queryParams = querystring.parse(doc.location.search.slice(1));
-    var widgets = {};
+
     var widgetIdAttrName = 'data-apres-pvt-widget-id';
+    var widgets = {};
 
     // Get or install a widget object for an element
     apres.widget = function(elem, WidgetFactory, params) {
-      if (WidgetFactory === null) {
-        var widgetId;
-        if (elem.attr) {
-          widgetId = elem.attr(widgetIdAttrName);
-        } else {
-          widgetId = elem.getAttribute(widgetIdAttrName);
-        }
-        if (widgetId !== null) {
-          return widgets[widgetId];
+      var id;
+      if (typeof WidgetFactory === 'undefined') {
+        id = elem.attr ? elem.attr(widgetIdAttrName) : elem.getAttribute(widgetIdAttrName);
+        if (id !== null) {
+          return widgets[id];
         }
       } else {
-        var id;
         do {
           id = Math.random().toString().slice(2);
         } while (widgets[id] !== null);
-        var widget = widgets[id] = WidgetFactory(elem, params);
+        var widget = widgets[id] = new WidgetFactory(elem, params);
         if (elem.attr) {
           elem.attr(widgetIdAttrName, id);
         } else {
           elem.setAttribute(widgetIdAttrName, id);
         }
+        apres.delegate(widget, elem);
         return widget;
       }
     }
 
-    var insertWidget = function(id, name, elem) {
-      require([name], function(WidgetFactory) {
-          var i, params, paramName;
-          if (typeof WidgetFactory === 'function') {
-            id = id.toString();
-            if (WidgetFactory.widgetParams) {
-              params = {};
-              for (i = 0; (paramName = WidgetFactory.widgetParams[i]); i++) {
-                params[paramName] = elem.getAttribute('data-widget-' + paramName);
+    apres.initialize = function(document) {
+      // Find controller for this view
+      // First look for a data-apres-controller attribute on the <html> tag
+      // failing that, look for a module peer to the html page
+      var htmlElem = document.getElementsByTagName('html')[0];
+      if (typeof htmlElem !== 'undefined') {
+        apres.controllerName = htmlElem.getAttribute('data-apres-controller');
+      }
+      apres.queryParams = querystring.parse(document.location.search.slice(1));
+      widgets = {};
+
+      var insertWidget = function(id, name, elem) {
+        require([name], function(WidgetFactory) {
+            var i, params, paramName;
+            if (typeof WidgetFactory === 'function') {
+              id = id.toString();
+              if (WidgetFactory.widgetParams) {
+                params = {};
+                for (i = 0; (paramName = WidgetFactory.widgetParams[i]); i++) {
+                  params[paramName] = elem.getAttribute('data-widget-' + paramName);
+                }
               }
+              widgets[id] = new WidgetFactory(elem, params);
+              elem.setAttribute(widgetIdAttrName, id); 
+            } else {
+              console && console.error('Apres - widget module ' + name + ' did not return a function');
             }
-            widgets[id] = new WidgetFactory(elem, params);
-            elem.setAttribute(widgetIdAttrName, id); 
-          } else {
-            console && console.error('Apres - widget module ' + name + ' did not return a function');
           }
-        }
-      );
-    }
-    var initView = function(controller) {
-      apres.controller = controller;
-      domReady(function() {
-          controller && controller.ready && controller.ready(apres.queryParams);
+        );
+      }
+      var initView = function(controller) {
+        apres.controller = controller;
+        domReady(function() {
+            controller && controller.ready && controller.ready(apres.queryParams);
 
-          var widgets = doc.getElementsByClassName('widget');
-          var i, widgetElem;
-          for (i = 0; (widgetElem = widgets[i]); i++) {
-            var widgetName = widgetElem.getAttribute('data-widget');
-            widgetName && insertWidget(i, widgetName, widgetElem);
+            var widgets = document.getElementsByClassName('widget');
+            var i, widgetElem;
+            for (i = 0; (widgetElem = widgets[i]); i++) {
+              var widgetName = widgetElem.getAttribute('data-widget');
+              widgetName && insertWidget(i, widgetName, widgetElem);
+            }
           }
-        }
-      );
+        );
+      }
+      if (apres.controllerName) {
+        require([apres.controllerName], initView);
+      } else {
+        initView();
+      }
     }
-    if (apres.controllerName) {
-      require([apres.controllerName], initView);
-    } else {
-      initView();
+    if (typeof document !== 'undefined') {
+      // Bootstrap the current document
+      apres.initialize(document);
     }
-
     return apres;
   }
 );
+
+// bind shim for js < 1.8.5 from
+// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind
+if (!Function.prototype.bind) {
+  Function.prototype.bind = function (oThis) {
+    if (typeof this !== "function") {
+      throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+    }
+    var aArgs = Array.prototype.slice.call(arguments, 1), 
+        fToBind = this, 
+        fNOP = function () {},
+        fBound = function () {
+          return fToBind.apply(this instanceof fNOP ? this : oThis,
+            aArgs.concat(Array.prototype.slice.call(arguments)));
+      };
+    fNOP.prototype = this.prototype;
+    fBound.prototype = new fNOP();
+    return fBound;
+  };
+}
+

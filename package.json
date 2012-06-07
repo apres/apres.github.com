@@ -6,9 +6,12 @@
     "node-static": ">=0.5.9"
   }
   , "devDependencies": {
+    "requirejs": "1.0.8",
+    "mocha": ">=1.1.0",
+    "chai": ">=1.0.4"
   }
   , "scripts": {
-      "test": "",
+      "test": "./node_modules/.bin/mocha --reporter tap --ui qunit",
       "start": "node server.js"
   }
 }
