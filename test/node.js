@@ -23,6 +23,7 @@ test('#helpExpress', function(done) {
   }, function(e, r, b) {
     if (e) throw e;
     assert.equal(r.statusCode, 200);
+    assert.equal(r.header("content-type"), "application/javascript");
     done();
   });
 });
