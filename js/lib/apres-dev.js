@@ -16,7 +16,7 @@ requirejs.config({
     widget: '/js/widget',
     // Core libs
     // apres: 'apres-dev',
-    jquery: 'http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min',
+    jquery: '//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min',
     underscore: 'underscore-1.3.3',
     require: 'require-1.0.8',
     pubsub: 'pubsub-1.2.0',
