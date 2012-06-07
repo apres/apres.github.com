@@ -11,9 +11,9 @@ requirejs.config({
     // which maps to the site relative path: js/app/mymodule.js
     // This supports loading libraries from
     // CDN while loading app code from the app server host
-    app: '/apres/js/app',
+    app: '../app',
     // Core widgets map from widget/foo to js/widget/foo
-    widget: '/apres/js/widget',
+    widget: '../widget',
     // Core libs
     // apres: 'apres-dev',
     jquery: '//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min',
