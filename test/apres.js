@@ -3,14 +3,6 @@ if (!requirejs) var requirejs = require('./requirejs_config').config();
 requirejs(['apres', 'chai'], function(apres, chai) {
   var expect = chai.expect, assert = chai.assert;
 
-  var emptyDocument = {
-    getElementsByTagName: function() {return [];},
-    getElementsByClassName: function() {return [];},
-    location: {
-      search: ''
-    }
-  }
-
   suite('apres module');
   test('#version', function() {
     assert.equal(apres.VERSION, 'dev');
@@ -177,6 +169,22 @@ requirejs(['apres', 'chai'], function(apres, chai) {
     assert.equal(elem.delegates[0].eventName, 'blur');
     assert.equal(elem.delegates[0].selector, '#glasses');
     assert.strictEqual(elem.delegates[0].method(), widget);
+  });
+
+  suite('apres.initialize()');
+
+  var emptyDocument = {
+    getElementsByTagName: function() {return [];},
+    getElementsByClassName: function() {return [];},
+    location: {
+      search: ''
+    }
+  };
+
+  test('#empty doc', function() {
+    apres.initialize(emptyDocument);
+    assert.isUndefined(apres.controllerName);
+    assert.isUndefined(apres.controller);
   });
 
 });
