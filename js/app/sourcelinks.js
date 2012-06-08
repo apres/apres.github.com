@@ -7,9 +7,9 @@ define(
     // Compile a template to generate html for the widget to insert
     var template = handlebars.compile(
       '<ul>' +
-      '<li><a href="/viewsource.html?url={{documentUrl}}">view page source</a></li>' +
-      '<li><a href="/viewsource.html?url={{controllerUrl}}">view controller source</a></li>' +
-      '{{#each widgets}}<li><a href="/viewsource.html?url={{url}}">{{name}} widget source</a></li>{{/each}}' +
+      '<li><a href="viewsource.html?url={{documentUrl}}">view page source</a></li>' +
+      '<li><a href="viewsource.html?url={{controllerUrl}}">view controller source</a></li>' +
+      '{{#each widgets}}<li><a href="viewsource.html?url={{url}}">{{name}} widget source</a></li>{{/each}}' +
       '</ul>'
     );
 
