@@ -2,20 +2,15 @@
 // Apres is distributed freely under the MIT license
 // See http://apres.github.com/ for details
 
-/* global require, document */
+/* global requirejs, document */
 
 // Setup default Apres require config
 requirejs.config({
   paths: {
-    // Application modules are accessed as: app/mymodule
-    // which maps to the site relative path: js/app/mymodule.js
-    // This supports loading libraries from
-    // CDN while loading app code from the app server host
+    // Default paths to find core app and core widget modules
     app: '../app',
-    // Core widgets map from widget/foo to js/widget/foo
     widget: '../widget',
     // Core libs
-    // apres: 'apres-dev',
     jquery: '//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min',
     underscore: 'underscore-1.3.3',
     require: 'require-1.0.8',
