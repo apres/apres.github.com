@@ -108,17 +108,16 @@ define('apres',
       } else {
         do {
           id = Math.random().toString().slice(2);
-        } while (widgets[id] !== null);
+        } while (widgets[id] !== undefined);
         var widget = widgets[id] = new WidgetFactory(elem, params);
         if (elem.attr) {
           elem.attr(widgetIdAttrName, id);
         } else {
           elem.setAttribute(widgetIdAttrName, id);
         }
-        apres.delegate(widget, elem);
+        widget.events && apres.delegate(widget, elem);
         return widget;
       }
-      return this;
     }
 
     apres.initialize = function(document) {
