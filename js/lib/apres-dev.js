@@ -45,8 +45,32 @@ define('apres',
     var apres  = {};
     apres.VERSION = 'dev';
 
-    // Backbone-style event delegation
     var eventSplitter = /^(\S+)\s*(.*)$/;
+
+    // Backbone-style event delegation
+    // Sets up event delegation for document elements to application code.
+    //
+    // @events is an object that maps event name/element selector pairs to
+    // handler functions. @events may also be an object with an `events`
+    // attribute containing this mapping. This is common with controllers and
+    // widgets. The @events value may also be a function that will be called
+    // to derive the mapping so that it can be created dynamically. Example:
+    //
+    // {
+    //    'click button#ok': function(event) {...},
+    //    'change #entry-form input': 'validate'
+    // }
+    //
+    // If the handler function is specified as a string, it is assumed to be a
+    // method name of the containing object. Note @events is the only required
+    // argument.
+    //
+    // @elem is the root DOM element queried to find the elements to bind to.
+    // If not specified it is assumed to be `events.elem`.
+    //
+    // @bindee is the object to bind the handler functions to, making it the
+    // value of `this` inside the handlers. If omitted, it is assumed to be
+    // @events.
     apres.delegate = function(events, elem, bindee) {
       bindee || (bindee = events);
       elem || (elem = bindee.elem);
