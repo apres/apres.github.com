@@ -1,7 +1,13 @@
 if (!requirejs) var requirejs = require('./requirejs_config').config();
 
-requirejs(['apres', 'chai'], function(apres, chai) {
+requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
   var expect = chai.expect, assert = chai.assert;
+
+  // Sinon test wrapper automatically creates a sandbox
+  // that will be torn down after the test
+  var sinonTest = function(name, func) {
+    return test(name, sinon.test(func));
+  }
 
   suite('apres module');
   test('#version', function() {
@@ -22,7 +28,9 @@ requirejs(['apres', 'chai'], function(apres, chai) {
   var handler = function() {return this};
   var bindee = {};
 
-  test('#basic events', function() {
+  sinonTest('#basic events', function() {
+    this.stub(apres, '$').returnsArg(0);
+
     var elem = new MockElem;
     var events = {
       'click #clicker': handler,
@@ -44,7 +52,9 @@ requirejs(['apres', 'chai'], function(apres, chai) {
     assert.strictEqual(elem.delegates[2].method(), bindee);
   });
 
-  test('#bindee default', function() {
+  sinonTest('#bindee default', function() {
+    this.stub(apres, '$').returnsArg(0);
+
     var elem = new MockElem;
     var events = {'foo': handler};
     apres.delegate(events, elem);
@@ -53,7 +63,9 @@ requirejs(['apres', 'chai'], function(apres, chai) {
     assert.strictEqual(elem.delegates[0].method(), events);
   });
 
-  test('#inner events bindee', function() {
+  sinonTest('#inner events bindee', function() {
+    this.stub(apres, '$').returnsArg(0);
+
     var elem = new MockElem;
     var controller = {
       events: {'bar': handler}
@@ -64,7 +76,9 @@ requirejs(['apres', 'chai'], function(apres, chai) {
     assert.strictEqual(elem.delegates[0].method(), controller);
   });
 
-  test('#inner events function', function() {
+  sinonTest('#inner events function', function() {
+    this.stub(apres, '$').returnsArg(0);
+
     var elem = new MockElem;
     var controller = {
       events: function() {
@@ -83,7 +97,9 @@ requirejs(['apres', 'chai'], function(apres, chai) {
 
   });
 
-  test('#inner elem', function() {
+  sinonTest('#inner elem', function() {
+    this.stub(apres, '$').returnsArg(0);
+
     var c = {
       elem: new MockElem,
       events: {'baz #spam': handler}
@@ -149,7 +165,9 @@ requirejs(['apres', 'chai'], function(apres, chai) {
     assert.strictEqual(w.params, params);
   });
 
-  test('#add widget delegates', function() {
+  sinonTest('#add widget delegates', function() {
+    this.stub(apres, '$').returnsArg(0);
+
     var params = {blue: 'eggs'};
     var elem = new MockDomElem;
     var EventedWidget = function(elemArg, paramsArg) {
@@ -169,6 +187,48 @@ requirejs(['apres', 'chai'], function(apres, chai) {
     assert.equal(elem.delegates[0].eventName, 'blur');
     assert.equal(elem.delegates[0].selector, '#glasses');
     assert.strictEqual(elem.delegates[0].method(), widget);
+  });
+
+  sinonTest('#widget ready event', function() {
+    this.stub(apres, '$').returnsArg(0);
+    var spy = this.spy();
+    apres.pubsub.subscribe(apres.topic.widgetReady, spy);
+
+    assert(!spy.called, 'widget ready fired prematurely');
+    var elem = new MockDomElem;
+    var widget = apres.widget(elem, Widget);
+    this.clock.tick(1);
+    assert(spy.calledOnce, 'widget ready did not fire');
+    assert(spy.calledWithExactly(apres.topic.widgetReady, {widget: widget, elem: elem}), 
+      'widgetReady called with ' + sinon.format(spy.args));
+
+    apres.pubsub.unsubscribe(spy);
+  });
+
+  sinonTest('#widget ready event pending widget', function() {
+    this.stub(apres, '$').returnsArg(0);
+    var spy = this.spy();
+    apres.pubsub.subscribe(apres.topic.widgetReady, spy);
+
+    var elem = new MockDomElem;
+    var widgetReadyCallback;
+    var PendingWidget = function(elemArg, paramsArg, readyArg) {
+      this.elem = elemArg;
+      this.params = paramsArg;
+      assert.isFunction(readyArg)
+      readyArg(false);
+      widgetReadyCallback = readyArg;
+    }
+    var widget = apres.widget(elem, PendingWidget);
+    this.clock.tick(1);
+    assert(!spy.called, 'widget ready fired prematurely');
+    widgetReadyCallback();
+    this.clock.tick(1);
+    assert(spy.calledOnce, 'widget ready did not fire');
+    assert(spy.calledWithExactly(apres.topic.widgetReady, {widget: widget, elem: elem}), 
+      'widgetReady called with ' + sinon.format(spy.args));
+
+    apres.pubsub.unsubscribe(spy);
   });
 
   suite('apres.initialize()');

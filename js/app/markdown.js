@@ -6,9 +6,6 @@ define(
   ['apres', 'jquery', 'widget/markdown'],
   function(apres, $, MarkdownWidget) {
     var controller = {};
-    controller.ready = function() {
-        apres.delegate(controller, $('html'));
-    }
 
     controller.events = {
       'click button#add-markdown': function() {

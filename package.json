@@ -3,16 +3,19 @@
   , "version": "0.0.1"
   , "private": true
   , "dependencies": {
-    "node-static": ">=0.5.9",
-    "express": ">=2.5.9",
-    "request": ">=2.9.202"
+    "node-static": "0.5.x",
+    "express": "2.5.x",
+    "request": "2.9.x"
   }
   , "devDependencies": {
-    "requirejs": "1.0.8",
-    "mocha": ">=1.1.0",
-    "chai": ">=1.0.4"
+    "requirejs": "1.0.x",
+    "jquery": "1.7.x",
+    "mocha": "1.1.x",
+    "chai": "1.0.x",
+    "node-inspector": "0.1.x"
   }
   , "scripts": {
+      "dtest": "./node_modules/.bin/mocha --reporter tap --ui qunit --debug-brk",
       "test": "./node_modules/.bin/mocha --reporter tap --ui qunit",
       "start": "node server.js"
   }
