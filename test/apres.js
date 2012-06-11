@@ -261,6 +261,30 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     apres.pubsub.unsubscribe(spy);
   });
 
+  sinonTest('#widget ready callback no-op after constructor', function() {
+    this.stub(apres, '$').returnsArg(0);
+    var spy = this.spy();
+    apres.pubsub.subscribe(apres.topic.widgetReady, spy);
+
+    var elem = new MockDomElem;
+    var widgetReadyCallback;
+    var SyncWidget = function(elemArg, paramsArg, readyArg) {
+      this.elem = elemArg;
+      this.params = paramsArg;
+      assert.isFunction(readyArg)
+      widgetReadyCallback = readyArg;
+    }
+
+    var widget = apres.widget(elem, SyncWidget);
+    this.clock.tick(1);
+    assert(spy.calledOnce, 'widget ready not called');
+    widgetReadyCallback();
+    this.clock.tick(1);
+    assert(spy.calledOnce, 'widget ready fired more than once');
+
+    apres.pubsub.unsubscribe(spy);
+  });
+
   suite('apres.initialize()');
 
   var emptyDocument = {
