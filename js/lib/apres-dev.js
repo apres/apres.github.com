@@ -230,21 +230,11 @@ define('apres',
       var initView = function(controller) {
         apres.controller = controller;
         apres.$(doc).ready(function() {
-          if (controller && controller.ready) controller.ready(apres.queryParams);
-          apres.findWidgets();
-          if (widgetsArePending()) {
-            var onWidgetReady = function() {
-              if (!widgetsArePending()) {
-                if (controller && controller.events) {
-                  apres.delegate(controller, doc.documentElement);
-                }
-                apres.pubsub.unsubscribe(topic.widgetReady, onWidgetReady);
-              }
-            }
-            apres.pubsub.subscribe(topic.widgetReady, onWidgetReady);
-          } else if (controller && controller.events) {
+          if (controller) {
+            if (typeof controller.ready === 'function') controller.ready(apres.queryParams);
             apres.delegate(controller, doc.documentElement);
           }
+          apres.findWidgets();
         });
       }
       if (apres.controllerName) {
