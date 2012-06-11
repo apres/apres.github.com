@@ -135,6 +135,13 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
   MockDomElem.prototype.setAttribute = function(k, v) {
     this.attrs[k] = v;
   }
+  MockDomElem.prototype.attr = function(k, v) {
+    if (v === undefined) {
+      return this.attrs[k];
+    } else {
+      this.attrs[k] = v;
+    }
+  }
   var Widget = function(elem, params) {
     this.elem = elem;
     this.params = params;
@@ -145,7 +152,9 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     assert.isUndefined(apres.widget(new MockDomElem));
   });
 
-  test('#add widget $ elem', function() {
+  sinonTest('#add widget $ elem', function() {
+    this.stub(apres, '$').returnsArg(0);
+
     var params = {foo: 'bar'};
     var elem = new Mock$Elem;
     var w = apres.widget(elem, Widget, params);
@@ -155,13 +164,13 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     assert.strictEqual(w.params, params);
   });
 
-  test('#add widget DOM elem', function() {
+  sinonTest('#add widget DOM elem', function() {
     var params = {green: 'eggs'};
     var elem = new MockDomElem;
     var w = apres.widget(elem, Widget, params);
     assert.strictEqual(w, apres.widget(elem));
     assert.instanceOf(w, Widget);
-    assert.strictEqual(w.elem, elem);
+    assert.deepEqual(w.elem, apres.$(elem));
     assert.strictEqual(w.params, params);
   });
 
@@ -171,7 +180,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     var params = {blue: 'eggs'};
     var elem = new MockDomElem;
     var EventedWidget = function(elemArg, paramsArg) {
-      assert.strictEqual(elemArg, elem);
+      assert.deepEqual(elemArg, apres.$(elem));
       this.elem = elemArg;
       assert.strictEqual(paramsArg, params);
       this.params = paramsArg;

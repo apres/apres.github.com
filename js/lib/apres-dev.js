@@ -125,8 +125,9 @@ define('apres',
     // Get or install a widget object for an element
     apres.widget = function(elem, WidgetFactory, params) {
       var id, widget;
+      elem = apres.$(elem);
       if (typeof WidgetFactory === 'undefined') {
-        id = elem.attr ? elem.attr(widgetIdAttrName) : elem.getAttribute(widgetIdAttrName);
+        id = elem.attr(widgetIdAttrName);
         if (typeof id !== 'undefined') {
           return widgets[id];
         }
@@ -146,11 +147,7 @@ define('apres',
         }
         var widget = widgets[id] = new WidgetFactory(elem, params, widgetReady);
         if (!pendingWidgets[id]) registerWidget();
-        if (elem.attr) {
-          elem.attr(widgetIdAttrName, id);
-        } else {
-          elem.setAttribute(widgetIdAttrName, id);
-        }
+        elem.attr(widgetIdAttrName, id);
         return widget;
       }
     }
