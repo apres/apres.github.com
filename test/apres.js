@@ -258,6 +258,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     widgetReadyCallback();
     this.clock.tick(1);
     assert(spy.calledOnce, 'widget ready fired more than once');
+    apres.pubsub.unsubscribe(spy);
   });
 
   suite('apres.initialize()');
