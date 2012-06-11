@@ -137,9 +137,10 @@ define('apres',
           apres.pubsub.publish(topic.widgetReady, {widget: widget, elem: elem});
         }
         var widgetReady = function(isReady) {
-          if (isReady === false) {
+          if (isReady === false && typeof pendingWidgets[id] === 'undefined') {
             pendingWidgets[id] = true;
-          } else if (delete pendingWidgets[id]) {
+          } else if (pendingWidgets[id]) {
+            pendingWidgets[id] = false;
             registerWidget();
           }
         }

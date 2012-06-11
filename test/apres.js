@@ -231,6 +231,35 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     apres.pubsub.unsubscribe(spy);
   });
 
+  sinonTest('#widget ready callback is one-shot', function() {
+    this.stub(apres, '$').returnsArg(0);
+    var spy = this.spy();
+    apres.pubsub.subscribe(apres.topic.widgetReady, spy);
+
+    var elem = new MockDomElem;
+    var widgetReadyCallback;
+    var PendingWidget = function(elemArg, paramsArg, readyArg) {
+      this.elem = elemArg;
+      this.params = paramsArg;
+      assert.isFunction(readyArg)
+      readyArg(false);
+      widgetReadyCallback = readyArg;
+    }
+    var widget = apres.widget(elem, PendingWidget);
+    this.clock.tick(1);
+    assert(!spy.called, 'widget ready fired prematurely');
+    widgetReadyCallback();
+    this.clock.tick(1);
+    assert(spy.calledOnce, 'widget ready did not fire');
+    widgetReadyCallback();
+    this.clock.tick(1);
+    assert(spy.calledOnce, 'widget ready fired more than once');
+    widgetReadyCallback(false);
+    widgetReadyCallback();
+    this.clock.tick(1);
+    assert(spy.calledOnce, 'widget ready fired more than once');
+  });
+
   suite('apres.initialize()');
 
   var emptyDocument = {
