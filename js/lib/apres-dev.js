@@ -6,6 +6,7 @@
 
 // Setup default Apres require config
 requirejs.config({
+  enforceDefine: true,
   paths: {
     // Default paths to find core app and core widget modules
     app: '../app',
@@ -50,6 +51,7 @@ define('apres',
     // Unit test dependency injection points
     apres.$ = $;
     apres.pubsub = pubsub;
+    apres.require = require;
 
     // PubSub Event topics
     var topic = apres.topic = {
@@ -59,6 +61,7 @@ define('apres',
     }
 
     var eventSplitter = /^(\S+)\s*(.*)$/;
+    var error = console ? console.error || console.log : function(){};
 
     // Backbone-style event delegation
     // Sets up event delegation for document elements to application code.
@@ -111,6 +114,78 @@ define('apres',
       return this;
     }
 
+    var illegalValue = function(type, name, value) {
+      error('Apres - Illegal ' + type + ' value "' + value + '" for widget param "' + name + '"');
+    }
+    // Type converters for widget parameters passed via tag attributes
+    var widgetParamConvs = {
+      'string': null,
+      'bool': function(name, value) {
+        var lc = value && value.toLowerCase();
+        if (lc === 'true' || lc === 'yes' || lc === '1') return true;
+        if (lc === 'false' || lc === 'no' || lc === '0') return false;
+        illegalValue('boolean', name, value);
+      },
+      'int': function(name, value) {
+        var n = parseInt(value);
+        if (n === NaN) illegalValue('integer', name, value);
+        return n;
+      },
+      'float': function(name, value) {
+        var n = parseFloat(value);
+        if (n === NaN) illegalValue('float', name, value);
+        return n;
+      },
+      'selector': function(name, value) {
+        return apres.$(value);
+      },
+      // "src" types return promise objects that asynchronously provide their
+      // results once the resources are loaded, or immediately if they are cached
+      'script_src': function(name, value) {
+        var deferred = apres.$.Promise();
+        apres.require([value], 
+          function(script) {deferred.resolve(script)},
+          function(err) {deferred.reject(err)}
+        );
+        return deferred.promise();
+      },
+      'text_src': function(name, value) {
+        var deferred = apres.$.Promise();
+        apres.require(['text!' + value],
+          function(text) {deferred.resolve(text)},
+          function(err) {deferred.reject(err)}
+        );
+        return deferred.promise();
+      },
+      'json_src': function(name, value) {
+        var deferred = apres.$.Promise();
+        apres.require(['json!' + value],
+          function(json) {deferred.resolve(json)},
+          function(err) {deferred.reject(err)}
+        );
+        return deferred.promise();
+      }
+    }
+    apres.convertParams = function(params, paramMap) {
+      var converted = {};
+      for (var name in paramMap) {
+        var info = paramMap[name];
+        var value = params[name] || info.default;
+        if (typeof value !== 'undefined') {
+          if (info && info.type) {
+            var convert = widgetParamConvs[info.type];
+            converted[name] = convert ? convert(name, value) : value;
+            if (typeof convert === 'undefined') {
+              error('Apres - Unknown widget param type: ' + info.type);
+            }
+          } else {
+            converted[name] = value;
+          }
+        }
+      }
+      return converted;
+    }
+
     var widgetIdAttrName = 'data-apres-pvt-widget-id';
     var widgetId = 0;
     var widgets = {};
@@ -146,6 +221,9 @@ define('apres',
             registerWidget();
           }
         }
+        if (WidgetFactory.widgetParams) {
+          var params = apres.convertParams(params || {}, WidgetFactory.widgetParams);
+        }
         var widget = widgets[id] = new WidgetFactory(elem, params, widgetReady);
         if (!pendingWidgets[id]) registerWidget();
         elem.attr(widgetIdAttrName, id);
@@ -155,20 +233,20 @@ define('apres',
 
     var doc;
 
-    var insertWidget = function(elem, name) {
+    apres.insertWidget = function(elem, name) {
       if (!name || elem.getAttribute(widgetIdAttrName)) return;
-      require([name], function(WidgetFactory) {
+      apres.require([name], function(WidgetFactory) {
           var i, params, paramName;
           if (typeof WidgetFactory === 'function') {
             if (WidgetFactory.widgetParams) {
               params = {};
-              for (i = 0; (paramName = WidgetFactory.widgetParams[i]); i++) {
+              for (paramName in WidgetFactory.widgetParams) {
                 params[paramName] = elem.getAttribute('data-widget-' + paramName);
               }
             }
             apres.widget(elem, WidgetFactory, params);
           } else {
-            console && console.error('Apres - widget module ' + name + ' did not return a function');
+            error('Apres - widget module ' + name + ' did not return a function');
           }
         }
       );
@@ -206,7 +284,7 @@ define('apres',
           elem.getElementsByClassName || (elem = elem.get(0));
           widgetElems = elem.getElementsByClassName('widget');
           for (i = 0; (widgetElem = widgetElems[i]); i++) {
-            insertWidget(widgetElem, widgetElem.getAttribute('data-widget'));
+            apres.insertWidget(widgetElem, widgetElem.getAttribute('data-widget'));
           }
         }
         scanning = false;
@@ -237,7 +315,7 @@ define('apres',
         });
       }
       if (apres.controllerName) {
-        require([apres.controllerName], initView);
+        apres.require([apres.controllerName], initView);
       } else {
         initView();
       }
