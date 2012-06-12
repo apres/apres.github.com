@@ -294,6 +294,36 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     apres.pubsub.unsubscribe(spy);
   });
 
+  sinonTest('#widget simple params', function() {
+    this.stub(apres, '$').returnsArg(0);
+    var ParamsWidget = function(elem, params) {
+      this.params = params;
+    }
+    ParamsWidget.widgetParams = {
+      strP: "String param with only descr",
+      strP2: {type: 'string', descr: 'String param with type', default: 'yoyo'},
+      intP: {type: 'int'},
+      floatP: {type: 'float'},
+      floatDefault: {type: 'float', default: 17},
+      boolP: {type: 'bool'}
+    }
+    this.stub(apres, 'require', function(deps, cb) {cb(ParamsWidget)});
+    var elem = new MockDomElem;
+    elem.attr('data-widget-strP', 'Prts');
+    elem.attr('data-widget-intP', '42');
+    elem.attr('data-widget-boolP', 'YES');
+    elem.attr('data-widget-extraP', 'huh?');
+    apres.insertWidget(elem, 'ParamsWidget');
+    var widget = apres.widget(elem);
+    assert.deepEqual(widget.params, {
+      strP: 'Prts',
+      strP2: 'yoyo',
+      intP: 42,
+      boolP: true,
+      floatDefault: 17
+    });
+  });
+
   suite('apres.initialize()');
 
   var emptyDocument = {
