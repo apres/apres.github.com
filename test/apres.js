@@ -336,7 +336,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     assert.equal(callback.callCount, 1);
   });
 
-  sinonTest('#widget simple elem params', function() {
+  sinonTest('#widget simple widget params', function() {
     this.stub(apres, '$').returnsArg(0);
     var ParamsWidget = function(elem, params) {
       this.params = params;
@@ -365,6 +365,44 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
       floatDefault: 17
     });
   });
+
+  for (paramType in {'scriptSrc':1, 'textSrc':1, 'jsonSrc':1}) {
+    sinonTest('#widget ' + paramType + ' param', function() {
+      var xyz = "this.is.a.xyz()";
+      this.stub(apres, 'require', function(deps, cb) {
+        assert.ok(deps[0].indexOf('path/to/src') !== -1, 'path not found');
+        cb(xyz)
+      });
+      var paramMap = {
+        xyz: {type: paramType}
+      };
+      var params = apres.convertParams({xyz: 'path/to/src'}, paramMap);
+      assert.isFunction(params.xyz.done);
+      var callback = sinon.spy(function(text) {
+        assert.equal(text, xyz);
+      });
+      var errback = sinon.spy();
+      params.xyz.done(callback);
+      params.xyz.fail(errback);
+      assert.equal(callback.callCount, 1);
+      assert.equal(errback.callCount, 0);
+    });
+
+    sinonTest('#widget ' + paramType + ' param error', function() {
+      this.stub(apres, 'require', function(deps, cb, eb) {eb();});
+      var paramMap = {
+        xyz: {type: paramType}
+      };
+      var params = apres.convertParams({xyz: 'path/to/src'}, paramMap);
+      assert.isFunction(params.xyz.done);
+      var callback = sinon.spy();
+      var errback = sinon.spy();
+      params.xyz.done(callback);
+      params.xyz.fail(errback);
+      assert.equal(callback.callCount, 0);
+      assert.equal(errback.callCount, 1);
+    });
+  }
 
   suite('apres.initialize()');
 

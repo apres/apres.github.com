@@ -133,8 +133,8 @@ define('apres',
       'string': null,
       'bool': function(name, value) {
         var lc = value && value.toLowerCase();
-        if (lc === 'true' || lc === 'yes' || lc === '1') return true;
-        if (lc === 'false' || lc === 'no' || lc === '0') return false;
+        if (lc === 'true' || lc === 'yes' || lc === '1' || lc === true) return true;
+        if (lc === 'false' || lc === 'no' || lc === '0' || lc === false) return false;
         illegalValue('boolean', name, value);
       },
       'int': function(name, value) {
@@ -152,24 +152,24 @@ define('apres',
       },
       // "src" types return promise objects that asynchronously provide their
       // results once the resources are loaded, or immediately if they are cached
-      'script_src': function(name, value) {
-        var deferred = apres.$.Promise();
+      'scriptSrc': function(name, value) {
+        var deferred = apres.$.Deferred();
         apres.require([value], 
           function(script) {deferred.resolve(script)},
           function(err) {deferred.reject(err)}
         );
         return deferred.promise();
       },
-      'text_src': function(name, value) {
-        var deferred = apres.$.Promise();
+      'textSrc': function(name, value) {
+        var deferred = apres.$.Deferred();
         apres.require(['text!' + value],
           function(text) {deferred.resolve(text)},
           function(err) {deferred.reject(err)}
         );
         return deferred.promise();
       },
-      'json_src': function(name, value) {
-        var deferred = apres.$.Promise();
+      'jsonSrc': function(name, value) {
+        var deferred = apres.$.Deferred();
         apres.require(['json!' + value],
           function(json) {deferred.resolve(json)},
           function(err) {deferred.reject(err)}
