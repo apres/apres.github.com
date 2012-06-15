@@ -24,6 +24,7 @@ requirejs.config({
     highlight: 'highlight-7.0',
     chai: 'chai-1.0.4',
     sinon: 'sinon-1.3.4',
+    bootstrap: 'bootstrap-2.0.4',
     // Requirejs plugins
     text: 'require-plugins/text-1.0.8',
     cs: 'require-plugins/cs-0.4.0',
@@ -37,7 +38,7 @@ requirejs.config({
     noext: 'require-plugins/noext-0.3.1',
     markdown: 'require-plugins/mdown-0.1.1',
     propertyParser: 'require-plugins/propertyParser-0.1.0',
-    component: 'require-plugins/component-0.0.0'
+    component: 'require-plugins/component-0.0.0',
   }
 });
 
