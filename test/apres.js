@@ -8,6 +8,11 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
   var sinonTest = function(name, func) {
     return test(name, sinon.test(func));
   }
+  // Helper assertions for string prefix compare
+  assert.startsWith = function(x, y, msg) {
+    assert.equal(x.substring(0, y.length), y, 
+      msg || '"' + x + '" does not start with "' + y + '"');
+  }
 
   suite('apres module');
   test('#version', function() {
@@ -19,68 +24,59 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
   var MockElem = function() {
     this.delegates = [];
   }
-  MockElem.prototype.delegate = function(selector, eventName, method) {
-   this.delegates.push({selector: selector, eventName:eventName, method:method});
-  }
-  MockElem.prototype.bind = function(eventName, method) {
-    this.delegates.push({eventName:eventName, method:method});
+  MockElem.prototype.on = function(eventName, selector, method) {
+    if (method !== undefined) {
+      this.delegates.push({selector: selector, eventName:eventName, method:method});
+    } else {
+      this.delegates.push({eventName:eventName, method:selector});
+    }
   }
   var handler = function() {return this};
-  var bindee = {};
 
-  sinonTest('#basic events', function() {
+  sinonTest('#delegate basic events', function() {
     this.stub(apres, '$').returnsArg(0);
 
     var elem = new MockElem;
-    var events = {
-      'click #clicker': handler,
-      'foo tag.baz div': handler,
-      'load': handler,
+    var delegate = {
+      events: {
+        'click #clicker': handler,
+        'foo tag.baz div': handler,
+        'load': handler,
+      }
     };
     assert.equal(elem.delegates.length, 0);
-    assert.notStrictEqual(handler(), bindee);
-    assert.strictEqual(apres.delegate(events, elem, bindee), apres);
+    assert.notStrictEqual(handler(), delegate);
+    assert.strictEqual(apres.delegate(delegate, elem), apres);
     assert.equal(elem.delegates.length, 3);
-    assert.equal(elem.delegates[0].eventName, 'click');
+    assert.startsWith(elem.delegates[0].eventName, 'click');
     assert.equal(elem.delegates[0].selector, '#clicker');
-    assert.strictEqual(elem.delegates[0].method(), bindee);
-    assert.equal(elem.delegates[1].eventName, 'foo');
+    assert.strictEqual(elem.delegates[0].method(), delegate);
+    assert.startsWith(elem.delegates[1].eventName, 'foo');
     assert.equal(elem.delegates[1].selector, 'tag.baz div');
-    assert.strictEqual(elem.delegates[1].method(), bindee);
-    assert.equal(elem.delegates[2].eventName, 'load');
-    assert.strictEqual(elem.delegates[2].selector, undefined);
-    assert.strictEqual(elem.delegates[2].method(), bindee);
+    assert.strictEqual(elem.delegates[1].method(), delegate);
+    assert.startsWith(elem.delegates[2].eventName, 'load');
+    assert.ok(!elem.delegates[2].selector);
+    assert.strictEqual(elem.delegates[2].method(), delegate);
   });
 
-  sinonTest('#bindee default', function() {
+  sinonTest('#delegate inner $el', function() {
     this.stub(apres, '$').returnsArg(0);
 
-    var elem = new MockElem;
-    var events = {'foo': handler};
-    apres.delegate(events, elem);
-    assert.equal(elem.delegates.length, 1);
-    assert.equal(elem.delegates[0].eventName, 'foo');
-    assert.strictEqual(elem.delegates[0].method(), events);
-  });
-
-  sinonTest('#inner events bindee', function() {
-    this.stub(apres, '$').returnsArg(0);
-
-    var elem = new MockElem;
-    var controller = {
-      events: {'bar': handler}
+    var delegate = {
+      events: {'foo': handler},
+      $el: new MockElem,
     };
-    apres.delegate(controller, elem);
-    assert.equal(elem.delegates.length, 1);
-    assert.equal(elem.delegates[0].eventName, 'bar');
-    assert.strictEqual(elem.delegates[0].method(), controller);
+    apres.delegate(delegate);
+    assert.equal(delegate.$el.delegates.length, 1);
+    assert.startsWith(delegate.$el.delegates[0].eventName, 'foo');
+    assert.strictEqual(delegate.$el.delegates[0].method(), delegate);
   });
 
-  sinonTest('#inner events function', function() {
+  sinonTest('#events function', function() {
     this.stub(apres, '$').returnsArg(0);
 
     var elem = new MockElem;
-    var controller = {
+    var delegate = {
       events: function() {
         return {
           'jekyll': handler,
@@ -88,26 +84,32 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
         };
       }
     };
-    apres.delegate(controller, elem);
+    apres.delegate(delegate, elem);
     assert.equal(elem.delegates.length, 2);
-    assert.equal(elem.delegates[0].eventName, 'jekyll');
-    assert.strictEqual(elem.delegates[0].method(), controller);
-    assert.equal(elem.delegates[1].eventName, 'hyde');
-    assert.strictEqual(elem.delegates[1].method(), controller);
-
+    assert.startsWith(elem.delegates[0].eventName, 'jekyll');
+    assert.strictEqual(elem.delegates[0].method(), delegate);
+    assert.startsWith(elem.delegates[1].eventName, 'hyde');
+    assert.strictEqual(elem.delegates[1].method(), delegate);
   });
 
-  sinonTest('#inner elem', function() {
+  sinonTest('#delegate string handlers', function() {
     this.stub(apres, '$').returnsArg(0);
 
-    var c = {
-      elem: new MockElem,
-      events: {'baz #spam': handler}
+    var elem = new MockElem;
+    var delegate = {
+      fooHandler: function() {return this},
+      barHandler: function() {return this},
+      events: {
+        'baz #spam': 'fooHandler',
+        'bar #hello': 'barHandler',
+      }
     };
-    apres.delegate(c);
-    assert.equal(c.elem.delegates.length, 1);
-    assert.equal(c.elem.delegates[0].eventName, 'baz');
-    assert.equal(c.elem.delegates[0].method(), c);
+    apres.delegate(delegate, elem);
+    assert.equal(elem.delegates.length, 2);
+    assert.startsWith(elem.delegates[0].eventName, 'baz');
+    assert.equal(elem.delegates[0].method(), delegate);
+    assert.startsWith(elem.delegates[1].eventName, 'bar');
+    assert.equal(elem.delegates[1].method(), delegate);
   });
 
   suite('apres.widget()');
@@ -157,30 +159,50 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
 
     var params = {foo: 'bar'};
     var elem = new Mock$Elem;
-    var w = apres.widget(elem, Widget, params);
-    assert.strictEqual(w, apres.widget(elem));
-    assert.instanceOf(w, Widget);
-    assert.strictEqual(w.elem, elem);
-    assert.strictEqual(w.params, params);
+    var callback = sinon.spy(function(err, w) {
+      assert.isNull(err, 'err not null');
+      assert.strictEqual(w, apres.widget(elem));
+      assert.instanceOf(w, Widget);
+      assert.strictEqual(w.elem, elem);
+      assert.strictEqual(w.params, params);
+    });
+    apres.widget(elem, Widget, params, callback);
+    assert.equal(callback.callCount, 1);
   });
 
   sinonTest('#add widget DOM elem', function() {
     var params = {green: 'eggs'};
     var elem = new MockDomElem;
-    var w = apres.widget(elem, Widget, params);
-    assert.strictEqual(w, apres.widget(elem));
-    assert.instanceOf(w, Widget);
-    assert.deepEqual(w.elem, apres.$(elem));
-    assert.strictEqual(w.params, params);
+    var callback = sinon.spy(function(err, w) {
+      assert.isNull(err, 'err not null');
+      assert.strictEqual(w, apres.widget(elem));
+      assert.instanceOf(w, Widget);
+      assert.deepEqual(w.elem, apres.$(elem));
+      assert.strictEqual(w.params, params);
+    });
+    apres.widget(elem, Widget, params, callback);
+    assert.equal(callback.callCount, 1);
   });
 
-  sinonTest('#add widget delegates', function() {
+  sinonTest('#add widget no params', function() {
+    var elem = new MockDomElem;
+    var callback = sinon.spy(function(err, w) {
+      assert.isNull(err, 'err not null');
+      assert.strictEqual(w, apres.widget(elem));
+      assert.instanceOf(w, Widget);
+      assert.deepEqual(w.elem, apres.$(elem));
+    });
+    apres.widget(elem, Widget, callback);
+    assert.equal(callback.callCount, 1);
+  });
+
+  sinonTest('#widget delegated', function() {
     this.stub(apres, '$').returnsArg(0);
 
     var params = {blue: 'eggs'};
     var elem = new MockDomElem;
     var EventedWidget = function(elemArg, paramsArg) {
-      assert.deepEqual(elemArg, apres.$(elem));
+      assert.deepEqual(elemArg, elem);
       this.elem = elemArg;
       assert.strictEqual(paramsArg, params);
       this.params = paramsArg;
@@ -188,14 +210,17 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
         'blur #glasses': handler
       }
     }
-    EventedWidget.prototype = Object.create(Widget.prototype);
     assert.equal(elem.delegates.length, 0);
-    var widget = apres.widget(elem, EventedWidget, params);
-    assert.instanceOf(widget, EventedWidget);
-    assert.equal(elem.delegates.length, 1)
-    assert.equal(elem.delegates[0].eventName, 'blur');
-    assert.equal(elem.delegates[0].selector, '#glasses');
-    assert.strictEqual(elem.delegates[0].method(), widget);
+    var callback = sinon.spy(function(err, widget) {
+      assert.isNull(err, 'err not null');
+      assert.instanceOf(widget, EventedWidget);
+      assert.equal(elem.delegates.length, 1);
+      assert.startsWith(elem.delegates[0].eventName, 'blur');
+      assert.equal(elem.delegates[0].selector, '#glasses');
+      assert.strictEqual(elem.delegates[0].method(), widget);
+    });
+    var widget = apres.widget(elem, EventedWidget, params, callback);
+    assert.equal(callback.callCount, 1, 'callback not called');
   });
 
   sinonTest('#widget ready event', function() {
@@ -205,7 +230,8 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
 
     assert(!spy.called, 'widget ready fired prematurely');
     var elem = new MockDomElem;
-    var widget = apres.widget(elem, Widget);
+    var widget;
+    apres.widget(elem, Widget, function(err, w) {widget = w});
     this.clock.tick(1);
     assert(spy.calledOnce, 'widget ready did not fire');
     assert(spy.calledWithExactly(apres.topic.widgetReady, {widget: widget, elem: elem}), 
@@ -228,7 +254,8 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
       readyArg(false);
       widgetReadyCallback = readyArg;
     }
-    var widget = apres.widget(elem, PendingWidget);
+    var widget;
+    apres.widget(elem, PendingWidget, function(err, w) {widget = w});
     this.clock.tick(1);
     assert(!spy.called, 'widget ready fired prematurely');
     widgetReadyCallback();
@@ -254,6 +281,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
       readyArg(false);
       widgetReadyCallback = readyArg;
     }
+    apres.widget(elem, PendingWidget);
     var widget = apres.widget(elem, PendingWidget);
     this.clock.tick(1);
     assert(!spy.called, 'widget ready fired prematurely');
@@ -284,7 +312,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
       widgetReadyCallback = readyArg;
     }
 
-    var widget = apres.widget(elem, SyncWidget);
+    apres.widget(elem, SyncWidget);
     this.clock.tick(1);
     assert(spy.calledOnce, 'widget ready not called');
     widgetReadyCallback();
@@ -294,7 +322,21 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     apres.pubsub.unsubscribe(spy);
   });
 
-  sinonTest('#widget simple params', function() {
+  sinonTest('#widget by module name', function() {
+    this.stub(apres, '$').returnsArg(0);
+    var MyWidget = function(elem, params) {
+      this.params = params;
+    }
+    this.stub(apres, 'require', function(deps, cb) {cb(MyWidget)});
+    var callback = sinon.spy(function(err, widget) {
+      assert.instanceOf(widget, MyWidget);
+    });
+    var widget;
+    apres.widget(new MockDomElem, 'MyWidget', callback);
+    assert.equal(callback.callCount, 1);
+  });
+
+  sinonTest('#widget simple elem params', function() {
     this.stub(apres, '$').returnsArg(0);
     var ParamsWidget = function(elem, params) {
       this.params = params;
@@ -313,7 +355,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     elem.attr('data-widget-intP', '42');
     elem.attr('data-widget-boolP', 'YES');
     elem.attr('data-widget-extraP', 'huh?');
-    apres.insertWidget(elem, 'ParamsWidget');
+    apres.widget(elem, 'ParamsWidget');
     var widget = apres.widget(elem);
     assert.deepEqual(widget.params, {
       strP: 'Prts',
@@ -337,7 +379,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
   test('#empty doc', function() {
     apres.initialize(emptyDocument);
     assert.isUndefined(apres.controllerName);
-    assert.isUndefined(apres.controller);
+    assert.isUndefined(apres.controller());
   });
 
 });

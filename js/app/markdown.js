@@ -3,15 +3,21 @@
 // widgets programmatically
 
 define(
-  ['apres', 'jquery', 'widget/markdown'],
-  function(apres, $, MarkdownWidget) {
+  ['apres', 'jquery'],
+  function(apres, $) {
     var controller = {};
 
     controller.events = {
       'click button#add-markdown': function() {
-          var widget = new MarkdownWidget('#included-markdown');
-          widget.src('/content/example.md');
-          $('button#add-markdown').hide();
+        apres.widget('#included-markdown', 'widget/markdown', function(err, widget) {
+          if (!err) {
+            widget.src('/content/example.md');
+            $('button#add-markdown').hide();
+          } else {
+            $('button#add-markdown')
+              .replaceWith('<p>Error installing widget:' + err + '</p>');
+          }
+        });
       }
     }
 

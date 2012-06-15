@@ -56,59 +56,70 @@ define('apres',
     var topic = apres.topic = {
       all: 'apres',
       widget: 'apres.widget',
-      widgetReady: 'apres.widget.widgetReady'
+      widgetReady: 'apres.widget.ready',
+      replaceWidget: 'apres.widget.replace',
+      controller: 'apres.controller',
+      replaceController: 'apres.controller.replace'
     }
 
     var eventSplitter = /^(\S+)\s*(.*)$/;
+    var guid = 0;
     var error = console ? console.error || console.log : function(){};
 
     // Backbone-style event delegation
     // Sets up event delegation for document elements to application code.
     //
-    // @events is an object that maps event name/element selector pairs to
-    // handler functions. @events may also be an object with an `events`
-    // attribute containing this mapping. This is common with controllers and
-    // widgets. The @events value may also be a function that will be called
-    // to derive the mapping so that it can be created dynamically. Example:
+    // @delegate is an object with an attribute events containing event
+    // name/element selector pairs to handler functions. The events attribute
+    // may also be a function that will be called to derive the mapping so
+    // that it can be created dynamically. Example:
     //
-    // {
+    // delegate.events = {
     //    'click button#ok': function(event) {...},
     //    'change #entry-form input': 'validate'
     // }
     //
     // If the handler function is specified as a string, it is assumed to be a
-    // method name of the containing object. Note @events is the only required
-    // argument.
+    // method name of delegate.
     //
-    // @elem is the root DOM element queried to find the elements to bind to.
-    // If not specified it is assumed to be `events.elem`.
+    // @elem is the element queried to find the events to bind to.
+    // If not specified it is assumed to be `delegate.$el`.
     //
-    // @bindee is the object to bind the handler functions to, making it the
-    // value of `this` inside the handlers. If omitted, it is assumed to be
-    // @events.
-    apres.delegate = function(events, elem, bindee) {
-      if (!bindee) var bindee = events;
+    apres.delegate = function(delegate, elem) {
+      if (!delegate._apresGuid) delegate._apresGuid = guid++;
       if (!elem) {
-        var elem = bindee.elem;
+        var elem = delegate.$el;
       } else {
         elem = apres.$(elem);
       }
-      if (events.events) events = events.events;
+      var events = delegate.events;
       if (typeof events === 'function') events = events();
       if (events) {
         for (var key in events) {
           var method = events[key];
-          if (typeof method !== 'function') method = bindee[method];
-          if (typeof method !== 'function') throw new Error('No method named "' + events[key] + '"');
+          if (typeof method !== 'function') method = delegate[method];
+          if (typeof method !== 'function') error('No delegate method named "' + events[key] + '"');
           var match = key.match(eventSplitter);
           var eventName = match[1], selector = match[2];
-          method = method.bind(bindee);
           if (selector) {
-            elem.delegate(selector, eventName, method);
+            elem.on(eventName + '.apres.delegate' + delegate._apresGuid, selector, method.bind(delegate));
           } else {
-            elem.bind(eventName, method);
+            elem.on(eventName + '.apres.delegate' + delegate._apresGuid, method.bind(delegate));
           }
         }
+      }
+      return this;
+    }
+
+    // Remove event bindings of the delegate to elem
+    apres.undelegate = function(delegate, elem) {
+      if (delegate._apresGuid) {
+        if (!elem) {
+          var elem = delegate.$el;
+        } else {
+          elem = apres.$(elem);
+        }
+        elem.off('.apres.delegate' + delegate._apresGuid);
       }
       return this;
     }
@@ -186,71 +197,110 @@ define('apres',
     }
 
     var widgetIdAttrName = 'data-apres-pvt-widget-id';
-    var widgetId = 0;
     var widgets = {};
-    var pendingWidgets = {};
-
-    var widgetsArePending = function() {
-      for (var id in pendingWidgets) {
-        return true;
+    var widgetPending = {};
+    var setWidget = function(elem, WidgetFactory, params) {
+      var oldId = elem.attr(widgetIdAttrName);
+      var oldWidget = widgets[oldId];
+      var widget = null;
+      if (oldWidget) {
+        apres.undelegate(oldWidget, elem);
+        delete widgets[oldId];
+        elem.attr(widgetIdAttrName, null);
       }
-      return false;
+      if (WidgetFactory) {
+        var id = guid++;
+        var registerWidget = function() {
+          widget.events && apres.delegate(widget, elem);
+          apres.pubsub.publish(topic.widgetReady, {widget: widget, elem: elem});
+        }
+        var widgetReady = function(isReady) {
+          if (isReady === false && typeof widgetPending[id] === 'undefined') {
+            widgetPending[id] = true;
+          } else if (widgetPending[id]) {
+            widgetPending[id] = false;
+            registerWidget();
+          }
+        }
+        if (!params && WidgetFactory.widgetParams) {
+            var params = {};
+            for (var paramName in WidgetFactory.widgetParams) {
+              params[paramName] = elem.attr('data-widget-' + paramName);
+            }
+        }
+        if (WidgetFactory.widgetParams) {
+          params = apres.convertParams(params, WidgetFactory.widgetParams);
+        }
+        widget = widgets[id] = new WidgetFactory(elem, params, widgetReady);
+        if (!widgetPending[id]) registerWidget();
+        elem.attr(widgetIdAttrName, id);
+      }
+      if (oldWidget) {
+        apres.pubsub.publishSync(topic.replaceWidget, 
+          {elem: elem, oldWidget: oldWidget, newWidget: widget});
+      }
+      return widget;
     }
 
     // Get or install a widget object for an element
-    apres.widget = function(elem, WidgetFactory, params) {
+    //
+    // @elem DOM element where the widget is installed.
+    //
+    // @WidgetFactory a constructor function for the widget, or a module name
+    // for the widget constructor.
+    //
+    // @params an optional parameter object passed to the WidgetFactory.
+    // if not provided, the parameters will be derived from the element's
+    // `data-widget-*` attributes. To explicitly specify no parameters,
+    // pass an empty object.
+    //
+    // @callback an optional callback function with the signature
+    // `callback(err, widget)`. this function will be called when the widget
+    // is installed, or an error occurs. 
+    //
+    apres.widget = function(elem, WidgetFactory, params, callback) {
       var id, widget;
       elem = apres.$(elem);
+      if (typeof callback === 'undefined' && typeof params === 'function') {
+        // apres.widget(elem, factory, callback)
+        callback = params;
+        params = undefined;
+      }
       if (typeof WidgetFactory === 'undefined') {
         id = elem.attr(widgetIdAttrName);
         if (typeof id !== 'undefined') {
           return widgets[id];
         }
       } else {
-        id = widgetId++;
-        var registerWidget = function() {
-          widget.events && apres.delegate(widget, elem);
-          apres.pubsub.publish(topic.widgetReady, {widget: widget, elem: elem});
-        }
-        var widgetReady = function(isReady) {
-          if (isReady === false && typeof pendingWidgets[id] === 'undefined') {
-            pendingWidgets[id] = true;
-          } else if (pendingWidgets[id]) {
-            pendingWidgets[id] = false;
-            registerWidget();
+        if (typeof WidgetFactory === 'string') {
+          apres.require([WidgetFactory], 
+            function(factory) {
+              if (typeof factory !== 'function') {
+                var msg = 'Apres - widget module "' + WidgetFactory + '" did not return a factory function';
+                error(msg);
+                if (callback) callback(Error(msg));
+              }
+              try {
+                widget = setWidget(elem, factory, params);
+                if (callback) callback(null, widget);
+              } catch (err) {
+                if (callback) callback(err);
+              }
+            },
+            callback
+          );
+        } else {
+          try {
+            widget = setWidget(elem, WidgetFactory, params);
+            if (callback) callback(null, widget);
+          } catch (err) {
+            if (callback) callback(err);
           }
         }
-        if (WidgetFactory.widgetParams) {
-          var params = apres.convertParams(params || {}, WidgetFactory.widgetParams);
-        }
-        var widget = widgets[id] = new WidgetFactory(elem, params, widgetReady);
-        if (!pendingWidgets[id]) registerWidget();
-        elem.attr(widgetIdAttrName, id);
-        return widget;
       }
     }
 
     var doc;
-
-    apres.insertWidget = function(elem, name) {
-      if (!name || elem.getAttribute(widgetIdAttrName)) return;
-      apres.require([name], function(WidgetFactory) {
-          var i, params, paramName;
-          if (typeof WidgetFactory === 'function') {
-            if (WidgetFactory.widgetParams) {
-              params = {};
-              for (paramName in WidgetFactory.widgetParams) {
-                params[paramName] = elem.getAttribute('data-widget-' + paramName);
-              }
-            }
-            apres.widget(elem, WidgetFactory, params);
-          } else {
-            error('Apres - widget module ' + name + ' did not return a function');
-          }
-        }
-      );
-    }
-
     var scanning = false;
     var scans;
     // limit re-entrant calls to findWidgets to avoid infinite loops
@@ -268,6 +318,8 @@ define('apres',
       if (typeof elem == 'undefined') {
         if (!doc) throw new Error('document not defined, did you call apres.initialize()?');
         var elem = doc.documentElement;
+      } else if (elem.get) {
+        elem = elem.get(0);
       }
       elemQueue.push(elem);
       if (!scanning) {
@@ -283,28 +335,24 @@ define('apres',
           elem.getElementsByClassName || (elem = elem.get(0));
           widgetElems = elem.getElementsByClassName('widget');
           for (i = 0; (widgetElem = widgetElems[i]); i++) {
-            apres.insertWidget(widgetElem, widgetElem.getAttribute('data-widget'));
+            var factoryName = widgetElem.getAttribute('data-widget');
+            if (factoryName) apres.widget(widgetElem, factoryName);
           }
         }
         scanning = false;
       } else if (++scans > maxScans) {
         scanning = false;
-        throw new Error('Too many calls to apres.findWidgets(), widgets may be infinitely nested');
+        error('Too many calls to apres.findWidgets(), widgets may be infinitely nested');
       }
     }
 
-    apres.initialize = function(document) {
-      doc = document;
-      // Find controller for this view
-      // First look for a data-apres-controller attribute on the <html> tag
-      // failing that, look for a module peer to the html page
-      if (doc.documentElement) {
-        apres.controllerName = doc.documentElement.getAttribute('data-apres-controller');
-      }
-      apres.queryParams = querystring.parse(document.location.search.slice(1));
-
-      var initView = function(controller) {
-        apres.controller = controller;
+    var controller;
+    var setController = function(newController) {
+      if (newController !== controller) {
+        if (controller) apres.undelegate(controller, doc.documentElement);
+        apres.pubsub.publishSync(topic.replaceController, 
+          {oldController: controller, newController: newController});
+        controller = newController;
         apres.$(doc).ready(function() {
           if (controller) {
             if (typeof controller.ready === 'function') controller.ready(apres.queryParams);
@@ -313,11 +361,53 @@ define('apres',
           apres.findWidgets();
         });
       }
-      if (apres.controllerName) {
-        apres.require([apres.controllerName], initView);
+    }
+
+    // Get or set the controller for the view When setting a new controller,
+    // it's `ready()` method will be called when the DOM is ready, or
+    // immediately if it is already. Then any event mappings it declares will
+    // be bound.  Event mappings for the previous controller, if any, will be
+    // unbound first. If the controller being set is the same as the current
+    // view controller, this is a no-op.
+    //
+    // @newController a controller object, or the name of a module that
+    // returns a controller object.
+    //
+    // @callback is an optional callback function with the signature
+    // `callback(err, controller)`. When @newController is a module name, this
+    // function will be called when the controller is installed, or an error
+    // occurs. 
+    //
+    apres.controller = function(newController, callback) {
+      if (typeof newController === 'undefined') {
+        return controller;
+      } else if (typeof newController === 'string') {
+        apres.controllerName = newController;
+        require([newController], 
+          function(controller) {
+            try {
+              setController(controller);
+            } catch (err) {
+              if (callback) callback(err);
+            }
+            if (callback) callback(null, controller);
+          },
+          callback
+        );
       } else {
-        initView();
+        apres.controllerName = undefined;
+        setController(newController);
       }
+    }
+
+    apres.initialize = function(document) {
+      var controllerName;
+      doc = document;
+      apres.queryParams = querystring.parse(doc.location.search.slice(1));
+      if (doc.documentElement) {
+        controllerName = doc.documentElement.getAttribute('data-apres-controller');
+      }
+      apres.controller(controllerName || undefined);
     }
     if (typeof document !== 'undefined') {
       // Bootstrap the current document

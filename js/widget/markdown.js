@@ -65,7 +65,10 @@ define(
         srcText && this.markdown(srcText);
       }
     }
-    MarkdownWidget.widgetParams = ['src', 'selector'];
+    MarkdownWidget.widgetParams = {
+      'src': 'Markdown resource source path', 
+      'selector': 'Markdown source element selector'
+    };
     return MarkdownWidget;
   }
 );
