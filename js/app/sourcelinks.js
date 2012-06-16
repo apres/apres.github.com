@@ -8,7 +8,7 @@ define(
     var template = handlebars.compile(
       '<ul>' +
       '<li><a href="viewsource.html?url={{documentUrl}}">view page source</a></li>' +
-      '<li><a href="viewsource.html?url={{controllerUrl}}">view controller source</a></li>' +
+      '{{#if controllerUrl}}<li><a href="viewsource.html?url={{controllerUrl}}">view controller source</a></li>{{/if}}' +
       '{{#each widgets}}<li><a href="viewsource.html?url={{url}}">{{name}} widget source</a></li>{{/each}}' +
       '</ul>'
     );
@@ -20,9 +20,11 @@ define(
       // Setup the context data for rendering the template for this page
       var context = {
         documentUrl: document.location.pathname,
-        controllerUrl: require.toUrl(apres.controllerName),
         widgets: []
       };
+      if (apres.controllerName) {
+        context.controllerUrl = require.toUrl(apres.controllerName);
+      }
       // Find the widgets in the page to populate the widgets array
       $.each($('.widget'), function(i, elem) {
           var name = elem.getAttribute('data-widget');
