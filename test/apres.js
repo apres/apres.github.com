@@ -404,6 +404,56 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     });
   }
 
+  suite('apres.srcPromise()');
+
+  sinonTest('#success', function() {
+    var xyz = "this.is.a.xyz()";
+    this.stub(apres, 'require', function(deps, cb) {
+      assert.ok(deps[0].indexOf('path/to/src') !== -1, 'path not found');
+      cb(xyz)
+    });
+    var promise = apres.srcPromise('path/to/src');
+    assert.isFunction(promise.done);
+    var callback = sinon.spy(function(text) {
+      assert.equal(text, xyz);
+    });
+    var errback = sinon.spy();
+    promise.done(callback);
+    promise.fail(errback);
+    assert.equal(callback.callCount, 1);
+    assert.equal(errback.callCount, 0);
+  });
+
+  sinonTest('#success with plugin', function() {
+    var xyz = "this.is.a.xyz()";
+    this.stub(apres, 'require', function(deps, cb) {
+      assert.ok(deps[0].indexOf('plugin!path/to/src') !== -1, 'path not found');
+      cb(xyz)
+    });
+    var promise = apres.srcPromise('path/to/src', 'plugin');
+    assert.isFunction(promise.done);
+    var callback = sinon.spy(function(text) {
+      assert.equal(text, xyz);
+    });
+    var errback = sinon.spy();
+    promise.done(callback);
+    promise.fail(errback);
+    assert.equal(callback.callCount, 1);
+    assert.equal(errback.callCount, 0);
+  });
+
+  sinonTest('#error', function() {
+    this.stub(apres, 'require', function(deps, cb, eb) {eb()});
+    var promise = apres.srcPromise('gonna/error/out');
+    assert.isFunction(promise.done);
+    var callback = sinon.spy();
+    var errback = sinon.spy();
+    promise.done(callback);
+    promise.fail(errback);
+    assert.equal(callback.callCount, 0);
+    assert.equal(errback.callCount, 1);
+  });
+
   suite('apres.initialize()');
 
   var emptyDocument = {

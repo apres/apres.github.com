@@ -125,6 +125,18 @@ define('apres',
       return this;
     }
 
+    // Create a jQuery deferred promise object to load and access a named
+    // resource, optionally using a requirejs plugin.
+    apres.srcPromise = function(name, plugin) {
+      if (plugin) name = plugin + '!' + name;
+      var deferred = apres.$.Deferred();
+      apres.require([name],
+        function(res) {deferred.resolve(res)},
+        function(err) {deferred.reject(err)}
+      );
+      return deferred.promise();
+    }
+
     var illegalValue = function(type, name, value) {
       error('Apres - Illegal ' + type + ' value "' + value + '" for widget param "' + name + '"');
     }
@@ -153,28 +165,13 @@ define('apres',
       // "src" types return promise objects that asynchronously provide their
       // results once the resources are loaded, or immediately if they are cached
       'scriptSrc': function(name, value) {
-        var deferred = apres.$.Deferred();
-        apres.require([value], 
-          function(script) {deferred.resolve(script)},
-          function(err) {deferred.reject(err)}
-        );
-        return deferred.promise();
+        return apres.srcPromise(value);
       },
       'textSrc': function(name, value) {
-        var deferred = apres.$.Deferred();
-        apres.require(['text!' + value],
-          function(text) {deferred.resolve(text)},
-          function(err) {deferred.reject(err)}
-        );
-        return deferred.promise();
+        return apres.srcPromise(value, 'text');
       },
       'jsonSrc': function(name, value) {
-        var deferred = apres.$.Deferred();
-        apres.require(['json!' + value],
-          function(json) {deferred.resolve(json)},
-          function(err) {deferred.reject(err)}
-        );
-        return deferred.promise();
+        return apres.srcPromise(value, 'json');
       }
     }
     apres.convertParams = function(params, paramMap) {
