@@ -53,6 +53,10 @@ define('apres',
     apres.pubsub = pubsub;
     apres.require = require;
 
+    var error = function(){};
+    if (console) {
+      error = console.error ? console.error.bind(console) : console.log.bind(console);
+    }
     // PubSub Event topics
     var topic = apres.topic = {
       all: 'apres',
@@ -65,7 +69,6 @@ define('apres',
 
     var eventSplitter = /^(\S+)\s*(.*)$/;
     var guid = 0;
-    var error = console ? console.error || console.log : function(){};
 
     // Backbone-style event delegation
     // Sets up event delegation for document elements to application code.
@@ -282,7 +285,8 @@ define('apres',
                 widget = setWidget(elem, factory, params);
                 if (callback) callback(null, widget);
               } catch (err) {
-                if (callback) callback(err);
+                if (callback) {callback(err)} else {throw err}
+                error('Error installing widget ' + WidgetFactory + ': ' + err);
               }
             },
             callback
@@ -292,7 +296,8 @@ define('apres',
             widget = setWidget(elem, WidgetFactory, params);
             if (callback) callback(null, widget);
           } catch (err) {
-            if (callback) callback(err);
+            if (callback) {callback(err)} else {throw err}
+            error('Error installing widget ' + WidgetFactory + ': ' + err);
           }
         }
       }
