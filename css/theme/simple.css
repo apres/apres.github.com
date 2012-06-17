@@ -1,0 +1,60 @@
+/**
+ * Simple Apres theme stylesheet
+ * Part of the Apres suite
+ * http://apres.github.com/
+ */
+
+.box, .border-top {
+  border-top: 1px solid #222;
+}
+.box, .border-left {
+  border-left: 1px solid #222;
+}
+.box, .border-right {
+  border-right: 1px solid #222;
+}
+.box, .border-bottom {
+  border-bottom: 1px solid #222;
+}
+.inset {
+  margin: 1.5em;
+}
+
+.tinted {
+  background-color: #f0f0ff;
+}
+.shaded,
+.tinted > .tinted {
+  background-color: #e0e0ee;
+}
+.contrast, .shaded > .shaded, 
+.shaded > .tinted,
+.tinted > .tinted > .tinted {
+  background-color: #66b;
+  border-color: white;
+  color: white;
+}
+
+nav.bar {
+  width: 100%;
+  margin: 0;
+  z-index: 9999;
+  box-shadow: 0 0 50px #aaa;
+  min-height: 3em;
+  padding 0.5em;
+  background-color: #222;
+  border-bottom: 2px dotted #44b;
+  font-family: 'Helvetica Neue', Helvetica, sans-serif;
+  font-weight: bold;
+  color: #222;
+}
+nav.bar * {
+  color: #eee;
+  text-color: #eee;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  font-family: 'Helvetica Neue', Helvetica, sans-serif;
+}
+
+
