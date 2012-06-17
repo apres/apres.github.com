@@ -355,7 +355,7 @@ define('apres',
         if (controller) apres.undelegate(controller, doc.documentElement);
         apres.pubsub.publishSync(topic.replaceController, 
           {oldController: controller, newController: newController});
-        controller = newController;
+        controller = newController || undefined;
         apres.$(doc).ready(function() {
           if (controller) {
             if (typeof controller.ready === 'function') controller.ready(apres.queryParams);
@@ -384,14 +384,14 @@ define('apres',
     apres.controller = function(newController, callback) {
       if (typeof newController === 'undefined') {
         return controller;
-      } else if (typeof newController === 'string') {
+      } else if (typeof newController === 'string' && newController) {
         apres.controllerName = newController;
         require([newController], 
           function(controller) {
             try {
               setController(controller);
             } catch (err) {
-              if (callback) callback(err);
+              if (callback) {callback(err)} else {throw err}
             }
             if (callback) callback(null, controller);
           },
@@ -410,7 +410,7 @@ define('apres',
       if (doc.documentElement) {
         controllerName = doc.documentElement.getAttribute('data-apres-controller');
       }
-      apres.controller(controllerName || undefined);
+      apres.controller(controllerName || null);
     }
     if (typeof document !== 'undefined') {
       // Bootstrap the current document
