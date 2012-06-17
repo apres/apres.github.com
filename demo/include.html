@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" data-apres-controller="">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <title>Include Widget Demo</title>
+  <link href='../css/base.css' rel='stylesheet' type='text/css'>
+  <link href='../css/grid.css' rel='stylesheet' type='text/css'>
+  <link href='../css/theme/simple.css' rel='stylesheet' type='text/css'>
+  <script data-main="../js/lib/apres-dev.js" src="../js/lib/require-1.0.8.js"></script>
+</head>
+<body>
+  <div class="widget" data-widget="widget/include"
+    data-widget-src="/content/include-top.html"></div>
+  <div class="flush row">
+    <div class="widget container three columns border-right shaded" data-widget="widget/include"
+      data-widget-src="/content/include-left.html"></div>
+    <div class="container eight columns">
+      <div class="widget box container" data-widget="app/sourcelinks"/>
+    </div>
+  </div>
+  <noscript>
+    <h1>Javascript Required</h1>
+    <p>Sorry, this page requires a javascript-enabled browser.</p>
+  </noscript>
+</body>
+</html>
