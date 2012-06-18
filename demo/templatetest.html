@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" data-apres-controller="">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <title></title>
+  <link href='http://fonts.googleapis.com/css?family=Happy+Monkey' rel='stylesheet' type='text/css'>
+  <script data-main="../js/lib/apres-dev.js" src="../js/lib/require-1.0.8.js"></script>
+</head>
+<body>
+  <div id="test"></div>
+  <h3>Handlebars</h3>
+  <script>
+    require(['handlebars-1.0.0.beta.6', 'jquery'], function(handlebars, $) {
+        var ctx = {test: function() {return 'foobar!'}};
+        var tmpl = handlebars.compile('<p>This is {{test}}</p>');
+        $('#test').html(tmpl(ctx));
+    });
+  </script>
+
+  <noscript>
+    <h1>Javascript Required</h1>
+    <p>Sorry, this page requires a javascript-enabled browser.</p>
+  </noscript>
+</body>
+</html>

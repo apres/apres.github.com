@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" data-apres-controller="app/handlebars">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <title>Handlebars Template Demo</title>
+  <link href='../css/base.css' rel='stylesheet' type='text/css'>
+  <link href='../css/grid.css' rel='stylesheet' type='text/css'>
+  <link href='../css/theme/simple.css' rel='stylesheet' type='text/css'>
+  <script data-main="../js/lib/apres-dev.js" src="../js/lib/require-1.0.8.js"></script>
+</head>
+<body>
+  <h1 class="container"><small>Handlebars Templates</small></h1>
+  <div class="row">
+    <div class="three column container">
+      <p>
+        Handlebars is a "logic-less" templating language based on
+        mustache. It provides several helpers that extend the 
+        language for better readability, and you can easily create
+        your own custom helpers to extend its capabilities.
+      <p>
+        For all the details check out 
+        <a href="http://handlebarsjs.com/">handlebarsjs.com</a>.
+    </div>
+    <div id="fav-color-template" class="widget three column container" 
+      data-widget="widget/handlebars">
+      <!-- Template source can be inlined in a script tag as below, 
+           or loaded from a separate resource 
+      -->
+      <script type="text/x-handlebars">
+        <div style="background-color: {{color}}; font-size: 1.6rem" class="padded box">
+          Hello there <u>{{name}}</u>, I now know that your favorite color is
+          <u>{{color}}</u>, but I&apos;m unlikely to remember it
+          tomorrow.
+        </div>
+      </script>
+    </div>
+    <div id="fav-color-form" class="three column padded box">
+      <p>
+        <label for="name">Your Name:</label><br>
+        <input name="name" />
+      <p>
+        <label for="color">Favorite Color:</label><br>
+        <select name="color">
+          <option></option>
+          <option>Red</option>
+          <option>Orange</option>
+          <option>Yellow</option>
+          <option>Green</option>
+          <option>Blue</option>
+          <option>Violet</option>
+          <option>Chartreuse</option>
+          <option>Fuschia</option>
+        </select>
+      <p>
+        <button id="render-fav-color">Render Template</button>
+    </div>
+  </div>
+  <div id="sourcelinks" class="widget inset box" data-widget="app/sourcelinks"></div>
+  <noscript>
+    <h1>Javascript Required</h1>
+    <p>Sorry, this page requires a javascript-enabled browser.</p>
+  </noscript>
+</body>
+</html>
