@@ -14,7 +14,11 @@ define(['apres'], function(apres) {
 
     var include = function(text) {
       if (this.escape) {
-        text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;');
+        text = String(text)
+          .replace(/&(?!(\w+|\#\d+);)/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
       }
       this.$el.html(text);
       apres.findWidgets(this.$el);
