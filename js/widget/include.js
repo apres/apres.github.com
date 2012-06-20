@@ -1,5 +1,5 @@
 // Include widget by Casey Duncan
-// Let's you include html content from other files
+// Lets you include html content from other files
 // including widget declarations
 //
 // Part of the Apres suite http://apres.github.com
