@@ -8,13 +8,23 @@
   <script data-main="../js/lib/apres-dev.js" src="../js/lib/require-1.0.8.js"></script>
 </head>
 <body>
-  <div id="test"></div>
   <h3>Handlebars</h3>
+  <div id="handlebars"></div>
   <script>
     require(['handlebars-1.0.0.beta.6', 'jquery'], function(handlebars, $) {
         var ctx = {test: function() {return 'foobar!'}};
         var tmpl = handlebars.compile('<p>This is {{test}}</p>');
-        $('#test').html(tmpl(ctx));
+        $('#handlebars').html(tmpl(ctx));
+    });
+  </script>
+
+  <h3>Jade</h3>
+  <div id="jade"</div>
+  <script>
+    require(['jade-0.26.1', 'jquery'], function(jade, $) {
+      var ctx = {name: 'Riley Doodle', what: 'Poodle'};
+      var tmpl = jade.compile('p #{name} is a #{what}');
+      $('#jade').html(tmpl(ctx));
     });
   </script>
 

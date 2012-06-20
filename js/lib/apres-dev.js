@@ -12,7 +12,7 @@ requirejs.config({
     app: '../app',
     widget: '../widget',
     // Core libs
-    jquery: '//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min',
+    //jquery: '//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min',
     underscore: 'underscore-1.3.3',
     require: 'require-1.0.8',
     pubsub: 'pubsub-1.2.0',
@@ -21,6 +21,7 @@ requirejs.config({
     CoffeeScript: 'coffeescript-1.3.3',
     querystring: 'querystring-0.5.0',
     handlebars: 'handlebars-1.0.0.beta.6',
+    jade: 'jade-0.26.1',
     highlight: 'highlight-7.0',
     chai: 'chai-1.0.4',
     sinon: 'sinon-1.3.4',

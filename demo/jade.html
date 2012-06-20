@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" data-apres-controller="app/jade">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <title>Jade Template Demo</title>
+  <link href='../css/base.css' rel='stylesheet' type='text/css'>
+  <link href='../css/grid.css' rel='stylesheet' type='text/css'>
+  <link href='../css/theme/simple.css' rel='stylesheet' type='text/css'>
+  <script data-main="../js/lib/apres-dev.js" src="../js/lib/require-1.0.8.js"></script>
+</head>
+<body>
+  <h1 class="container"><small>Jade Templates</small></h1>
+  <div class="row">
+    <div class="three column container">
+      <p>
+        Jade templates provide a terse syntax for
+        generating dynamic markup. It uses familiar
+        css selector conventions to denote structure
+        more efficiently.
+      <p>
+        For all the details check out 
+        <a href="http://jade-lang.com/">jade-lang.com</a>.
+    </div>
+    <div id="blanks-template" class="widget three column container" 
+      data-widget="widget/jade">
+      <!-- Template source can be inlined in a script tag as below, 
+           or loaded from a separate resource.
+
+           Jade is sensitive to indentation, so it works best
+           to outdent the jade scripts all the way to the left.
+      -->
+<script type="text/x-jade">
+.padded.box
+  | There once was a #{animal} named Larry. Whose
+  | #{noun} was really quite scary. A #{adjective}
+  | passerby, who was normally shy, shouted 
+  | "#{interjection}! you can really #{verb} high."
+</script> 
+    </div>
+    <div id="blanks-form" class="three column padded box">
+      <h3><small>Fill in the blanks</small></h3>
+      <p>
+        <label for="noun">A Noun:</label><br>
+        <input name="noun" />
+      <p>
+        <label for="animal">An Animal:</label><br>
+        <select name="animal">
+          <option></option>
+          <option>Rhino</option>
+          <option>Chicken</option>
+          <option>Gator</option>
+          <option>Beetle</option>
+          <option>Gecko</option>
+          <option>Pony</option>
+          <option>Python</option>
+          <option>Slug</option>
+        </select>
+      <p>
+        <label for="verb">A Verb:</label><br>
+        <input name="verb" />
+      <p>
+        <label for="adjective">An Adjective:</label><br>
+        <input name="adjective" />
+      <p>
+        <label for="interjection">An Interjection:</label><br>
+        <input name="interjection" />
+      <p>
+        <button id="render-blanks">Render Template</button>
+    </div>
+  </div>
+  <div id="sourcelinks" class="widget inset box" data-widget="app/sourcelinks"></div>
+  <noscript>
+    <h1>Javascript Required</h1>
+    <p>Sorry, this page requires a javascript-enabled browser.</p>
+  </noscript>
+</body>
+</html>
