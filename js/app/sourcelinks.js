@@ -6,7 +6,7 @@ define(
   function(require, apres, $, handlebars) {
     // Compile a template to generate html for the widget to insert
     var template = handlebars.compile(
-      '<ul>' +
+      '<ul style="padding: 1em 3em; list-style: disc">' +
       '<li><a href="viewsource.html?url={{documentUrl}}">view page source</a></li>' +
       '{{#if controllerUrl}}<li><a href="viewsource.html?url={{controllerUrl}}">view controller source</a></li>{{/if}}' +
       '{{#each widgets}}<li><a href="viewsource.html?url={{url}}">{{name}} widget source</a></li>{{/each}}' +
@@ -23,13 +23,13 @@ define(
         widgets: []
       };
       if (apres.controllerName) {
-        context.controllerUrl = require.toUrl(apres.controllerName);
+        context.controllerUrl = apres.controllerName + '.js';
       }
       // Find the widgets in the page to populate the widgets array
       $.each($('.widget'), function(i, elem) {
           var name = elem.getAttribute('data-widget');
           if (name) {
-            context.widgets.push({name: name, url: require.toUrl(name)});
+            context.widgets.push({name: name, url: name + '.js'});
           }
         }
       );
