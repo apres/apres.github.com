@@ -26,10 +26,12 @@ define(
         context.controllerUrl = apres.controllerName + '.js';
       }
       // Find the widgets in the page to populate the widgets array
+      var seen = {};
       $.each($('.widget'), function(i, elem) {
           var name = elem.getAttribute('data-widget');
-          if (name) {
+          if (name && !seen[name]) {
             context.widgets.push({name: name, url: name + '.js'});
+            seen[name] = true;
           }
         }
       );
