@@ -198,6 +198,16 @@ define('apres',
       return converted;
     }
 
+    apres.getDataParamsFromElem = function(elem, paramMap, prefix) {
+      var paramPrefix = prefix || "data-widget-";
+      var params = {};
+      for (var paramName in paramMap) {
+        params[paramName] = elem.attr(paramPrefix + paramName);
+      }
+      params = apres.convertParams(params, paramMap);
+      return params;
+    }
+
     var widgetIdAttrName = 'data-apres-pvt-widget-id';
     var widgets = {};
     var widgetPending = {};
@@ -224,15 +234,11 @@ define('apres',
             registerWidget();
           }
         }
-        if (!params && WidgetFactory.widgetParams) {
-            var params = {};
-            for (var paramName in WidgetFactory.widgetParams) {
-              params[paramName] = elem.attr('data-widget-' + paramName);
-            }
-        }
         if (WidgetFactory.widgetParams) {
-          params = apres.convertParams(params, WidgetFactory.widgetParams);
+          params = $.extend(params,
+            apres.getDataParamsFromElem(elem, WidgetFactory.widgetParams));
         }
+
         widget = widgets[id] = new WidgetFactory(elem, params, widgetReady);
         if (!widgetPending[id]) registerWidget();
         elem.attr(widgetIdAttrName, id);
