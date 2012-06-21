@@ -404,6 +404,19 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     });
   }
 
+  sinonTest('#widget json param', function() {
+    var xyz = '{"foo":123}';
+    this.stub(apres, 'require', function(deps, cb) {
+      assert.ok(deps[0].indexOf('path/to/src') !== -1, 'path not found');
+      cb(xyz)
+    });
+    var paramMap = {
+      xyz: {type: 'json'}
+    };
+    var params = apres.convertParams({xyz: xyz}, paramMap);
+    assert.equal(params.xyz.foo, 123);
+  });
+
   sinonTest('#widget widget param precedence', function() {
     this.stub(apres, '$').returnsArg(0);
     var ParamsWidget = function(elem, params) {

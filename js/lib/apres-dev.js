@@ -176,6 +176,9 @@ define('apres',
       },
       'jsonSrc': function(name, value) {
         return apres.srcPromise(value, 'json');
+      },
+      'json': function(name, value) {
+        return apres.$.parseJSON(value);
       }
     }
     apres.convertParams = function(params, paramMap) {
