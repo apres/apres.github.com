@@ -198,7 +198,7 @@ define('apres',
       return converted;
     }
 
-    apres.getDataParamsFromElem = function(elem, paramMap, prefix) {
+    apres.getParamsFromElem = function(elem, paramMap, prefix) {
       var paramPrefix = prefix || "data-widget-";
       var params = {};
       for (var paramName in paramMap) {
@@ -236,7 +236,7 @@ define('apres',
         }
         if (WidgetFactory.widgetParams) {
           params = $.extend(params,
-            apres.getDataParamsFromElem(elem, WidgetFactory.widgetParams));
+            apres.getParamsFromElem(elem, WidgetFactory.widgetParams));
         }
 
         widget = widgets[id] = new WidgetFactory(elem, params, widgetReady);

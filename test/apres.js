@@ -470,7 +470,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     assert.isUndefined(apres.controller());
   });
 
-  suite('apres.getDataParamsFromElem()');
+  suite('apres.getParamsFromElem()');
   sinonTest('# custom params', function() {
     this.stub(apres, '$').returnsArg(0);
     var paramsMap = {
@@ -486,7 +486,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     elem.attr('data-controller-intP', '42');
     elem.attr('data-controller-boolP', 'YES');
     elem.attr('data-controller-extraP', 'huh?');
-    var r = apres.getDataParamsFromElem(elem, paramsMap, 'data-controller-');
+    var r = apres.getParamsFromElem(elem, paramsMap, 'data-controller-');
     assert.deepEqual(r, {
       strP: 'Prts',
       strP2: 'yoyo',
