@@ -176,6 +176,9 @@ define('apres',
       },
       'jsonSrc': function(name, value) {
         return apres.srcPromise(value, 'json');
+      },
+      'json': function(name, value) {
+        return apres.$.parseJSON(value);
       }
     }
     apres.convertParams = function(params, paramMap) {
@@ -196,6 +199,16 @@ define('apres',
         }
       }
       return converted;
+    }
+
+    apres.getParamsFromElem = function(elem, paramMap, prefix) {
+      var paramPrefix = prefix || "data-widget-";
+      var params = {};
+      for (var paramName in paramMap) {
+        params[paramName] = elem.attr(paramPrefix + paramName);
+      }
+      params = apres.convertParams(params, paramMap);
+      return params;
     }
 
     var widgetIdAttrName = 'data-apres-pvt-widget-id';
@@ -224,15 +237,11 @@ define('apres',
             registerWidget();
           }
         }
-        if (!params && WidgetFactory.widgetParams) {
-            var params = {};
-            for (var paramName in WidgetFactory.widgetParams) {
-              params[paramName] = elem.attr('data-widget-' + paramName);
-            }
-        }
         if (WidgetFactory.widgetParams) {
-          params = apres.convertParams(params, WidgetFactory.widgetParams);
+          params = $.extend(params,
+            apres.getParamsFromElem(elem, WidgetFactory.widgetParams));
         }
+
         widget = widgets[id] = new WidgetFactory(elem, params, widgetReady);
         if (!widgetPending[id]) registerWidget();
         elem.attr(widgetIdAttrName, id);

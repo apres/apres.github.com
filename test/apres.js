@@ -404,6 +404,50 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     });
   }
 
+  sinonTest('#widget json param', function() {
+    var xyz = '{"foo":123}';
+    this.stub(apres, 'require', function(deps, cb) {
+      assert.ok(deps[0].indexOf('path/to/src') !== -1, 'path not found');
+      cb(xyz)
+    });
+    var paramMap = {
+      xyz: {type: 'json'}
+    };
+    var params = apres.convertParams({xyz: xyz}, paramMap);
+    assert.equal(params.xyz.foo, 123);
+  });
+
+  sinonTest('#widget widget param precedence', function() {
+    this.stub(apres, '$').returnsArg(0);
+    var ParamsWidget = function(elem, params) {
+      this.params = params;
+    }
+    ParamsWidget.widgetParams = {
+      strP: "String param with only descr",
+      strP2: {type: 'string', descr: 'String param with type', default: 'yoyo'},
+      intP: {type: 'int'},
+      floatP: {type: 'float'},
+      floatDefault: {type: 'float', default: 17},
+      boolP: {type: 'bool'}
+    }
+    this.stub(apres, 'require', function(deps, cb) {cb(ParamsWidget)});
+    var elem = new MockDomElem;
+    elem.attr('data-widget-strP', 'Prts');
+    elem.attr('data-widget-intP', '42');
+    elem.attr('data-widget-boolP', 'YES');
+    elem.attr('data-widget-extraP', 'huh?');
+    apres.widget(elem, 'ParamsWidget', {strP:"ZZZ", extra:"foo"});
+    var widget = apres.widget(elem);
+    assert.deepEqual(widget.params, {
+      strP: 'Prts',
+      strP2: 'yoyo',
+      intP: 42,
+      boolP: true,
+      floatDefault: 17,
+      extra: "foo"
+    });
+  });
+
   suite('apres.srcPromise()');
 
   sinonTest('#success', function() {
@@ -468,6 +512,32 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     apres.initialize(emptyDocument);
     assert.isUndefined(apres.controllerName);
     assert.isUndefined(apres.controller());
+  });
+
+  suite('apres.getParamsFromElem()');
+  sinonTest('# custom params', function() {
+    this.stub(apres, '$').returnsArg(0);
+    var paramsMap = {
+      strP: "String param with only descr",
+      strP2: {type: 'string', descr: 'String param with type', default: 'yoyo'},
+      intP: {type: 'int'},
+      floatP: {type: 'float'},
+      floatDefault: {type: 'float', default: 17},
+      boolP: {type: 'bool'}
+    }
+    var elem = new MockDomElem;
+    elem.attr('data-controller-strP', 'Prts');
+    elem.attr('data-controller-intP', '42');
+    elem.attr('data-controller-boolP', 'YES');
+    elem.attr('data-controller-extraP', 'huh?');
+    var r = apres.getParamsFromElem(elem, paramsMap, 'data-controller-');
+    assert.deepEqual(r, {
+      strP: 'Prts',
+      strP2: 'yoyo',
+      intP: 42,
+      boolP: true,
+      floatDefault: 17
+    });
   });
 
 });
