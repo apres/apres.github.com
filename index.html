@@ -8,196 +8,226 @@
   <link href='css/base.css' rel='stylesheet' type='text/css'>
   <link href='css/grid.css' rel='stylesheet' type='text/css'>
   <link href='css/ui.css' rel='stylesheet' type='text/css'>
+  <link href='css/font-awesome.css' rel='stylesheet' type='text/css'>
   <style>
     body {
-      background: url(img/apres-500x500-alpha.png) no-repeat fixed -100px -100px;
-    }
-    #content {
-      margin: 3%;
-      min-width: 330px;
-      float: left;
-      opacity: 0.75;
-      background: white;
-      border-radius: 6px;
-      -moz-border-radius: 6px;
-      -webkit-border-radius: 6px;
-      box-shadow: 0 0 60px #ccc;
-    }
-    nav.top {
-      position: relative;
-      top: -10px;
-      margin: 0 auto 0 auto;
-      width: 320px;
-      height: 64px;
-      background: white;
-      border: 1px solid #ddd;
-      box-shadow: 0 0 6px #ddd;
-    }
-    nav.top img.logo {
-      position: relative;
-      top: -16px;
-      margin: 0 auto 0 auto;
-      display: block;
-    }
-    #title {
-      position: absolute;
-      top: 12px;
-      width: 225px;
-      height: 70px;
-      padding: 10px;
-      color: white;
-      border: 1px solid #ddd;
-      border-radius: 3px 45px 45px 3px;
-      -moz-border-radius: 3px 45px 45px 3px;
-      -webkit-border-radius: 3px 45px 45px 3px;
-      float: left;
-      box-shadow: 2px 2px 6px #cccccf;
-      z-index: 999;
-    }
-    #title h1 {
-      position: relative;
-      left: 25px;
-      top: 4px;
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 48px;
-      text-shadow: #008800 0 0 4px;
+      background: url(img/stripe-bkg.png);
+      margin: 20px;
     }
-    h2 {
+    p, li {
+      font-size: 16px;
+    }
+    li {
+      list-style-type: none;
+      background: url(img/apres-circle.png) left top no-repeat;
+      padding-left: 34px;
       position: relative;
-      margin:  42px 48px 0 0;
+      top: -5px;
+      padding-bottom: 0.4em;
+    }
+    #description p {
+      font-size: 18px;
+    }
+    #background {
+      /*background: url(img/apres-500x500-alpha.png) no-repeat fixed -100px -100px;*/
+    }
+    #left-column {
+      position:relative;
+      top: 0.75em;
+      left: 2px;
+      opacity: 0.75;
+      border: 3px solid #fff;
+      background-color: #eeeeee;
+      float: left;
+      width: 300px;
+      border-radius: 10px 0 0 10px;
+      -moz-border-radius: 10px 0 0 10px;
+      -webkit-border-radius: 10px 0 0 10px;
+      box-shadow: 0 0 20px #ddd;
+    }
+    #left-column h1 {
+      text-align: center;
+      background-color: #dddddd;
+      border-bottom: 2px solid #ffffff;
+      padding: 6px;
+      font-size: 4.0rem;
+      border-radius: 10px 0 0 0;
+      -moz-border-radius: 10px 0 0 0;
+      -webkit-border-radius: 10px 0 0 0;
+      text-shadow: 1px 1px #fff;
+    }
+    #left-column p {
+      padding: 0 1em;
+    }
+    .reflection {
+      position: absolute;;
+      width: 100%;
+      height: 34px;
+      background: #fff;
+      opacity: 0.3;
+      border-radius: 0 0 50% 50%;
+      -moz-border-radius: 0 0 50% 50%;
+      -webkit-border-radius: 0 0 50% 50%;
+    }
+    #right-column {
+      position: absolute;
+      left: 324px;
+      margin-right: 20px;
+      margin-bottom: 40px;
+      min-width: 350px;
+    }
+    .content {
+      background: white;
+      border-radius: 8px;
+      -moz-border-radius: 8px;
+      -webkit-border-radius: 8px;
+      box-shadow: 0 0 20px #bbb;
+      padding: 2em;
+    }
+    #tag-line {
+      position: relative;
+      margin:  6px 48px 40px 0;
       float: right;
       font-family: Georgia, 'Times New Roman', Times, serif;
       font-style: italic;
       font-weight: normal;
-      font-size: 24px;
+      font-size: 26px;
+      line-height: 1.1em;
     }
-    #mantras {
-      margin: 2em 0 1em 0;
-      clear: both;
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 18px;
-      line-height: 24px;
+    #download {
+      margin-top: 1em;
+      text-shadow: 1px 1px #fff;
+      font-weight: bold;
     }
-    #mantras li {
-      list-style-image: url(img/apres-24x24.png);
-      list-style-position: inside;
-      padding: 3% 3% 1% 3%;
-      width: 27%;
-      float: left;
-      min-width: 200px;
-    }
-    #description {
-      float: left;
-      width: 100%;
-      clear: both;
-    }
-    #description p {
-      font-family: Georgia, 'Times New Roman', Times, serif;
-      font-size: 18px;
-      font-style: italic;
-      line-height: 25px;
-      float: left;
-      min-width: 200px;
-      padding: 3%;
-      width: 42%;
-    }
-    .ribbon {
-      background: #ccd3cc;
-      border-top: 4px double #aaaaaa;
-      border-bottom: 4px double #aaaaaa;
-      width: 102%;
-      float: left;
-      position: relative;
-      left: -1%;
-      border-radius: 20px 20px 10px 10px;
-      -moz-border-radius: 20px 20px 10px 10px;
-      -webkit-border-radius: 20px 20px 10px 10px;
-    }
-    #to-arms p {
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 18px;
-      line-height: 24px;
-      font-weight: normal;
-      width: 42%;
-      padding: 3% 3% 1% 3%;
+    h2 {
+      margin-top: 1.5em;
+      font-size: 160%;
     }
     .button {
-      margin-top: 6%;
       border-radius: 10px;
       -moz-border-radius: 10px;
       -webkit-border-radius: 10px;
     }
-    .green {
-      background: #55cf55 !important;
+    .green.button {
+      background: #4FB24F !important;
     }
     .green.button:hover, .green.button:focus	{ 
-      background-color: #66df66 !important; 
+      background-color: #57C757 !important; 
     }
     footer {
-      font-family: Georgia, 'Times New Roman', Times, serif;
-      clear: both;
-      width: 100%;
-      float: left;
       text-align: center;
       margin: 40px 20px 20px 20px;
+      padding 0 3em 0 3em;
     }
   </style>
 </head>
 <body>
-  <!-- <div class="widget" data-widget="app/sourcelinks"/>-->
-  <div id="title" class="green"><h1>Apres</h1></div>
-  <div id="content">
-    <!--
-    <nav class="top">
-      <img class="logo" src="img/apres-500x500.png" width="16" />
-    </nav>
-    -->
-    <h2>Embarrassingly Client-Side Web Apps.</h2>
-    <div id="mantras" class="ribbon">
-      <ul>
-        <li>
-          Client-side web development should be fun, really.
-        <li>
-          The batteries should not only be included, but fully charged and ready
-          for use.
-        <li>
-          If you don't need it, it shouldn't be in your way.
-      </ul>
+  <div id="background">
+    <section id="left-column">
+      <div class="reflection"></div>
+      <h1>Apres</h1>
+      <div id="description">
+        <p>
+          Apres is an open-source development tool for
+          creating rich client-side web applications.
+        <p id="download" class="text-center">
+          Latest development version:
+        <p class="text-center"><a class="nice large green button" 
+             href="https://github.com/apres/apres.github.com/zipball/master"
+            ><span style="position: relative; top: 3px;" 
+                   class="icon-circle-arrow-down icon-large"></span 
+            >&nbsp;<span style="position: relative; top: 6px;">Download&nbsp;Now<span></a>
+        <p class="text-center">
+          <a href="https://twitter.com/#!/ApresProject"
+            ><span class="icon-twitter"></span> Twitter</a>
+          &nbsp;&bull;&nbsp;
+          <a href="https://github.com/apres/apres.github.com"
+            ><span class="icon-github"></span> Github</a>
+        <p class="text-center">
+          <span class="icon-comments"></span> #apres <br> on irc.freenode.net
+      </div>
+    </section>
+    <div id="right-column">
+      <section class="content">
+        <div id="tag-line">Embarrassingly Client-Side Web Apps.</div>
+        <p class="flush">
+          Apres is an integrated suite of tools for building web applications
+          that can run entirely in your browser. Its modular design allows you
+          to build your application brick-by-brick, and also allows you complete
+          freedom to customize the components or invent your own from scratch.
+        <p>
+          Apres has a compact core that provides a foundation for modular web
+          development with a focus on declarative programming for common tasks.
+          However, it hides none of the full power that the underlying browser
+          environment provides. Instead, Apres provides leverage to make it possible
+          to build complex systems from simple parts.
+
+        <h2>Client-side web development should be fun, really.</h2>
+        <p>
+          Development should be about solving your problems, and building your
+          app. Often times this can seem secondary to a myriad of other
+          obstacles and distractions. Apres aims to bring the focus back where
+          it belongs.
+
+        <h2>The batteries should not only be included, but fully charged and ready
+            for use.</h2>
+        <p>
+          There are an astounding number of excellent open-source tools that
+          you could leverage to make your app great. But finding and integrating
+          all of these pieces is a major undertaking. Apres comes loaded
+          with an assortment of modules ready for you to use right away, and
+          more are being added all the time.
+
+        <h2>If you don't need it, it shouldn't be in your way.</h2>
+        <p>
+          Having such an assortment of functionality is a burden if you have
+          to worry about it even if your app doesn't use it. You don't
+          want to be weighed down by things you don't need. Apres' modular
+          approach means that you only pay for what you eat, and you
+          can learn as you go.
+
+        <h2>Modularity matters.</h2>
+        <p>
+          A global namespace is no place to build a modern app. Coupled with
+          asynchronous script loading, and manual dependency management the
+          standard browser runtime is no paradise for complex applications made
+          of many interdependent parts. Apres leverages the powerful, and
+          popular <a href="http://requirejs.org">requirejs</a> AMD module loader
+          to create a firm foundation for modular apps. Apres provides
+          AMD-compliant versions of many popular libraries. Requirejs can also
+          automatically adapt many non-AMD modules for use with Apres.
+
+        <h2>Use standards.</h2>
+        <p>
+          There's no lack of ways to do things in software development.
+          Leveraging existing standards means there are less things to develop,
+          debug, document, and learn about.
+          <ul>
+            <li>Apres views are html5 pages, with dynamic functionality
+                declared in html data attributes.
+            <li>Apres works with any standard web server, static, or dynamic.
+                It plugs easily into <a href="http://nodejs.org">node.js</a>
+                via an included express middleware adapter. Middleware for
+                other popular application servers are planned.
+            <li>Apres uses standard AMD javascript modules.
+            <li>Apres prefers composition over inheritance for application
+                code. This means less dependence and tight coupling between
+                your code and Apres since you can use plain objects.
+          </ul>
+      </section>
+      <footer class="flush text-center">
+        Apres is an <a href="http://www.opensource.org/licenses/mit-license.php">
+        MIT Licensed</a> open source project.
+        &nbsp;&bull;&nbsp;
+        <a href="https://twitter.com/#!/ApresProject">Twitter</a>
+        &nbsp;&bull;&nbsp;
+        <a href="https://github.com/apres/apres.github.com">Github</a>
+        &nbsp;&bull;&nbsp;
+        #apres on irc.freenode.net
+      </footer>
     </div>
-    <div id="description">
-      <p>
-        Apres is an integrated suite of tools for building web applications
-        that can run entirely in your browser. Its modular design allows you
-        to build your application brick-by-brick, and also allows you complete
-        freedom to customize the components or invent your own from scratch.
-      <p>
-        Apres has a compact core that provides a foundation for modular web
-        development with a focus on declarative programming for common tasks.
-        However, it hides none of the full power that the underlying browser
-        environment provides. Instead, Apres provides leverage to make it possible
-        to build complex systems from simple parts.
-    </div>
-    <div id="to-arms" class="ribbon">
-      <p class="left">Apres is in its early stages, but is growing at a rapid pace. Come join the project, try it out and see what you can make with it. 
-      <br><br>Come say hi at <b><i>#apres</i></b> on <i>irc.freenode.net</i>.</p>
-      <p class="left text-center"><a class="nice large green button" href="https://github.com/apres/apres.github.com/zipball/master"
-        >Download Now</a></p>
-    </div>
-    <footer>
-      Apres is an <a href="http://www.opensource.org/licenses/mit-license.php">
-      MIT Licensed</a> open source project.
-      &nbsp;&bull;&nbsp;
-      <a href="https://twitter.com/#!/ApresProject">Twitter</a>
-      &nbsp;&bull;&nbsp;
-      <a href="https://github.com/apres/apres.github.com">Github</a>
-      &nbsp;&bull;&nbsp;
-      #apres on irc.freenode.net
-    </footer>
-    <a href="https://github.com/apres/apres.github.com"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a>
   </div>
-  <noscript>
-    <h1>Javascript Required</h1>
-    <p>Sorry, this page requires a javascript-enabled browser.</p>
-  </noscript>
+    <a href="https://github.com/apres/apres.github.com"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a>
 </body>
 </html>
