@@ -62,7 +62,6 @@ define('apres',
     var topic = apres.topic = {
       all: 'apres',
       widget: 'apres.widget',
-      widgetReady: 'apres.widget.ready',
       replaceWidget: 'apres.widget.replace',
       controller: 'apres.controller',
       replaceController: 'apres.controller.replace'
@@ -227,7 +226,7 @@ define('apres',
         var id = guid++;
         var registerWidget = function() {
           widget.events && apres.delegate(widget, elem);
-          apres.pubsub.publish(topic.widgetReady, {widget: widget, elem: elem});
+          elem.trigger('widgetReady', widget);
         }
         var widgetReady = function(isReady) {
           if (isReady === false && typeof widgetPending[id] === 'undefined') {
@@ -368,10 +367,12 @@ define('apres',
         controller = newController || undefined;
         apres.$(doc).ready(function() {
           if (controller) {
-            if (typeof controller.ready === 'function') controller.ready(apres.queryParams);
             apres.delegate(controller, doc.documentElement);
+            apres.findWidgets();
+            if (typeof controller.ready === 'function') controller.ready(apres.queryParams);
+          } else {
+            apres.findWidgets();
           }
-          apres.findWidgets();
         });
       }
     }

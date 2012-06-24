@@ -21,8 +21,17 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
 
   suite('apres.delegate()');
 
-  var MockElem = function() {
+  var MockElem = function(attrs) {
     this.delegates = [];
+    this.trigger = sinon.spy();
+    this.attrs = attrs || {};
+  }
+  MockElem.prototype.attr = function(k, v) {
+    if (v === undefined) {
+      return this.attrs[k];
+    } else {
+      this.attrs[k] = v;
+    }
   }
   MockElem.prototype.on = function(eventName, selector, method) {
     if (method !== undefined) {
@@ -114,21 +123,10 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
 
   suite('apres.widget()');
 
-  var Mock$Elem = function(attrs) {
-    this.attrs = attrs || {};
-  }
-  Mock$Elem.prototype = Object.create(MockElem.prototype);
-  Mock$Elem.prototype.attr = function(k, v) {
-    if (v === undefined) {
-      return this.attrs[k];
-    } else {
-      this.attrs[k] = v;
-    }
-  }
-
   var MockDomElem = function(attrs) {
     this.delegates = [];
     this.attrs = attrs || {};
+    this.trigger = sinon.spy();
   }
   MockDomElem.prototype = Object.create(MockElem.prototype);
   MockDomElem.prototype.getAttribute = function(k) {
@@ -150,7 +148,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
   }
 
   test('#get unknown widget', function() {
-    assert.isUndefined(apres.widget(new Mock$Elem));
+    assert.isUndefined(apres.widget(new MockElem));
     assert.isUndefined(apres.widget(new MockDomElem));
   });
 
@@ -158,7 +156,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     this.stub(apres, '$').returnsArg(0);
 
     var params = {foo: 'bar'};
-    var elem = new Mock$Elem;
+    var elem = new MockElem;
     var callback = sinon.spy(function(err, w) {
       assert.isNull(err, 'err not null');
       assert.strictEqual(w, apres.widget(elem));
@@ -225,25 +223,18 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
 
   sinonTest('#widget ready event', function() {
     this.stub(apres, '$').returnsArg(0);
-    var spy = this.spy();
-    apres.pubsub.subscribe(apres.topic.widgetReady, spy);
 
-    assert(!spy.called, 'widget ready fired prematurely');
     var elem = new MockDomElem;
+    assert(!elem.trigger.called, 'widget ready fired prematurely');
     var widget;
     apres.widget(elem, Widget, function(err, w) {widget = w});
     this.clock.tick(1);
-    assert(spy.calledOnce, 'widget ready did not fire');
-    assert(spy.calledWithExactly(apres.topic.widgetReady, {widget: widget, elem: elem}), 
-      'widgetReady called with ' + sinon.format(spy.args));
-
-    apres.pubsub.unsubscribe(spy);
+    assert(elem.trigger.calledOnce, 'widget ready did not fire');
+    assert.strictEqual(elem.trigger.args[0][1], widget);
   });
 
   sinonTest('#widget ready event pending widget', function() {
     this.stub(apres, '$').returnsArg(0);
-    var spy = this.spy();
-    apres.pubsub.subscribe(apres.topic.widgetReady, spy);
 
     var elem = new MockDomElem;
     var widgetReadyCallback;
@@ -257,21 +248,15 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     var widget;
     apres.widget(elem, PendingWidget, function(err, w) {widget = w});
     this.clock.tick(1);
-    assert(!spy.called, 'widget ready fired prematurely');
+    assert(!elem.trigger.called, 'widget ready fired prematurely');
     widgetReadyCallback();
     this.clock.tick(1);
-    assert(spy.calledOnce, 'widget ready did not fire');
-    assert(spy.calledWithExactly(apres.topic.widgetReady, {widget: widget, elem: elem}), 
-      'widgetReady called with ' + sinon.format(spy.args));
-
-    apres.pubsub.unsubscribe(spy);
+    assert(elem.trigger.calledOnce, 'widget ready did not fire');
+    assert.strictEqual(elem.trigger.args[0][1], widget);
   });
 
   sinonTest('#widget ready callback is one-shot', function() {
     this.stub(apres, '$').returnsArg(0);
-    var spy = this.spy();
-    apres.pubsub.subscribe(apres.topic.widgetReady, spy);
-
     var elem = new MockDomElem;
     var widgetReadyCallback;
     var PendingWidget = function(elemArg, paramsArg, readyArg) {
@@ -284,25 +269,21 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     apres.widget(elem, PendingWidget);
     var widget = apres.widget(elem, PendingWidget);
     this.clock.tick(1);
-    assert(!spy.called, 'widget ready fired prematurely');
+    assert(!elem.trigger.called, 'widget ready fired prematurely');
     widgetReadyCallback();
     this.clock.tick(1);
-    assert(spy.calledOnce, 'widget ready did not fire');
+    assert(elem.trigger.calledOnce, 'widget ready did not fire');
     widgetReadyCallback();
     this.clock.tick(1);
-    assert(spy.calledOnce, 'widget ready fired more than once');
+    assert(elem.trigger.calledOnce, 'widget ready fired more than once');
     widgetReadyCallback(false);
     widgetReadyCallback();
     this.clock.tick(1);
-    assert(spy.calledOnce, 'widget ready fired more than once');
-    apres.pubsub.unsubscribe(spy);
+    assert(elem.trigger.calledOnce, 'widget ready fired more than once');
   });
 
   sinonTest('#widget ready callback no-op after constructor', function() {
     this.stub(apres, '$').returnsArg(0);
-    var spy = this.spy();
-    apres.pubsub.subscribe(apres.topic.widgetReady, spy);
-
     var elem = new MockDomElem;
     var widgetReadyCallback;
     var SyncWidget = function(elemArg, paramsArg, readyArg) {
@@ -314,12 +295,10 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
 
     apres.widget(elem, SyncWidget);
     this.clock.tick(1);
-    assert(spy.calledOnce, 'widget ready not called');
+    assert(elem.trigger.calledOnce, 'widget ready not called');
     widgetReadyCallback();
     this.clock.tick(1);
-    assert(spy.calledOnce, 'widget ready fired more than once');
-
-    apres.pubsub.unsubscribe(spy);
+    assert(elem.trigger.calledOnce, 'widget ready fired more than once');
   });
 
   sinonTest('#widget by module name', function() {
