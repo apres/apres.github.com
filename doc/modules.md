@@ -78,3 +78,66 @@ regularly.
   [12]: http://sinonjs.org/
   [13]: http://softwaremaniacs.org/soft/highlight/en/
 
+## Defining Application Modules ##
+
+All application code in Apres is defined in AMD modules. In general there are
+three different types of modules an application defines: controller modules,
+widgets, and libraries. The structure of controller, and widget modules must
+conform to what Apres expects, whereas library modules can be structured any
+way desired. In general, loading a module yields a single object that is
+manipulated in your app, either directly by the app, or via Apres. The module
+object can be a function, an object with attributes, or even just a static
+string.
+
+Below is an example module that provides a single function to escape or
+"sanitize" html tags in user defined content:
+    
+    define(function() {
+      return function(text) {
+        return String(text)
+          .replace(/&(?!(\w+|\#\d+);)/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+    });
+
+`define()` is the global function provided by requirejs used to register
+modules. Above is the simplest usage of `define()` where the module has no
+other dependencies. The anonymous function provided to `define` will be called
+once when the module is loaded. It is expected to return the module object, in
+this case a single function. Let's assume this module is stored in a file at
+`/js/app/sanitize.js`. To use sanitize from another application module, we can
+declare it as a dependency in that module's `define()` call:
+    
+    define(['/js/app/sanitize.js', 'apres'], function(sanitize, apres) {
+      // Called once sanitize.js, and apres are loaded
+    });
+
+Most modules will have one or more dependencies, so the above is probably the
+most common usage of `define()`. Here the first argument is an array of module
+names. A module name can be an absolute path, a fully qualified URL to a
+script, or a simple name. Simple names are processed through requirejs'
+pathing system to become file paths. Apres configures requirejs so that
+built-in libraries (see above), widgets, and controllers can be loaded using
+simple names.  For these simple names, you omit the file extension as with the
+`apres` module above.
+
+When the module is loaded, requirejs will process the dependencies in the
+first argument and load them asynchronously. If those modules have
+dependencies, they will also be loaded. Once a module is loaded once, it will
+be provided immediately to any other modules that depend on it. The anonymous
+function passed as the second argument to `define()` will be called once the
+dependencies are loaded and ready. It is passed the dependent module objects
+as its arguments, matching the order of the module name array. These arguments
+are used inside the module definition to access the dependencies.
+
+These two constructs are all you really need to know to create modules that
+work with Apres. However, requirejs provides other facilities, such as a
+CommonJS-style `define()` api, and the `require()` function for loading
+modules on-demand inside your modules. See the
+[requirejs api documentation](http://requirejs.org/docs/api.html) for full
+details.
+
+
+
