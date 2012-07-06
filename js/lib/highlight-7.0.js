@@ -24,6 +24,8 @@ var hljs = new function() {
     }
   }
 
+  var is_old_IE = (typeof navigator !== 'undefined' && /MSIE [678]/.test(navigator.userAgent));
+
   function blockText(block, ignoreNewLines) {
     var result = '';
     for (var i = 0; i < block.childNodes.length; i++)
@@ -36,8 +38,7 @@ var hljs = new function() {
         result += '\n';
       else
         result += blockText(block.childNodes[i]);
-    // Thank you, MSIE...
-    if (/MSIE [678]/.test(navigator.userAgent))
+    if (is_old_IE)
       result = result.replace(/\r/g, '\n');
     return result;
   }
@@ -152,7 +153,7 @@ var hljs = new function() {
 
   /* Initialization */
 
-  function compileModes() {
+  function compileModes(language_name) {
 
     function compileMode(mode, language, is_default) {
       if (mode.compiled)
@@ -213,13 +214,10 @@ var hljs = new function() {
         compileMode(mode.starts, language, false);
       }
     }
-
-    for (var i in languages) {
-      if (!languages.hasOwnProperty(i))
-        continue;
-      compileMode(languages[i].defaultMode, languages[i], true);
-    }
+    compileMode(languages[language_name].defaultMode, languages[language_name], true);
   }
+
+  var compiled_languages = {};
 
   /*
   Core highlighting function. Accepts a language name and a string with the
@@ -231,9 +229,9 @@ var hljs = new function() {
 
   */
   function highlight(language_name, value) {
-    if (!compileModes.called) {
-      compileModes();
-      compileModes.called = true;
+    if (!compiled_languages[language_name]) {
+      compileModes(language_name);
+      compiled_languages[language_name] = true;
     }
 
     function subMode(lexem, mode) {
@@ -352,7 +350,7 @@ var hljs = new function() {
     }
 
     function startNewMode(mode, lexem) {
-      var markup = mode.className?'<span class="' + mode.className + '">':'';
+      var markup = mode.className? '<span class="' + mode.className + '">': '';
       if (mode.returnBegin) {
         result += markup;
         mode.buffer = '';
@@ -530,7 +528,7 @@ var hljs = new function() {
     if (!class_name.match('(\\s|^)(language-)?' + language + '(\\s|$)')) {
       class_name = class_name ? (class_name + ' ' + language) : language;
     }
-    if (/MSIE [678]/.test(navigator.userAgent) && block.tagName == 'CODE' && block.parentNode.tagName == 'PRE') {
+    if (is_old_IE && block.tagName == 'CODE' && block.parentNode.tagName == 'PRE') {
       // This is for backwards compatibility only. IE needs this strange
       // hack becasue it cannot just cleanly replace <code> block contents.
       pre = block.parentNode;
@@ -601,13 +599,13 @@ var hljs = new function() {
   this.IDENT_RE = '[a-zA-Z][a-zA-Z0-9_]*';
   this.UNDERSCORE_IDENT_RE = '[a-zA-Z_][a-zA-Z0-9_]*';
   this.NUMBER_RE = '\\b\\d+(\\.\\d+)?';
-  this.C_NUMBER_RE = '\\b(0[xX][a-fA-F0-9]+|(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)'; // 0x..., 0..., decimal, float
+  this.C_NUMBER_RE = '(\\b0[xX][a-fA-F0-9]+|(\\b\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)'; // 0x..., 0..., decimal, float
   this.BINARY_NUMBER_RE = '\\b(0b[01]+)'; // 0b...
   this.RE_STARTERS_RE = '!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|\\.|-|-=|/|/=|:|;|<|<<|<<=|<=|=|==|===|>|>=|>>|>>=|>>>|>>>=|\\?|\\[|\\{|\\(|\\^|\\^=|\\||\\|=|\\|\\||~';
 
   // Common modes
   this.BACKSLASH_ESCAPE = {
-    begin: '\\\\.', relevance: 0
+    begin: '\\\\[\\s\\S]', relevance: 0
   };
   this.APOS_STRING_MODE = {
     className: 'string',
@@ -1049,7 +1047,7 @@ hljs.LANGUAGES['erlang'] = function(hljs) {
       contains: [
         {
           className: 'function',
-          begin: '^' + BASIC_ATOM_RE, end: '->',
+          begin: '^' + BASIC_ATOM_RE + '\\s*\\(', end: '->',
           returnBegin: true,
           illegal: '\\(|#|//|/\\*|\\\\|:',
           contains: [
@@ -1093,7 +1091,8 @@ hljs.LANGUAGES['javascript'] = function(hljs) {
       keywords: {
         keyword:
           'in if for while finally var new function do return void else break catch ' +
-          'instanceof with throw case default try this switch continue typeof delete',
+          'instanceof with throw case default try this switch continue typeof delete ' +
+          'let yield',
         literal:
           'true false null undefined NaN Infinity'
       },
@@ -1145,10 +1144,7 @@ hljs.LANGUAGES['css'] = function(hljs) {
   var FUNCTION = {
     className: 'function',
     begin: hljs.IDENT_RE + '\\(', end: '\\)',
-    contains: [{
-        endsWithParent: true, excludeEnd: true,
-        contains: [hljs.NUMBER_MODE, hljs.APOS_STRING_MODE, hljs.QUOTE_STRING_MODE]
-    }]
+    contains: [hljs.NUMBER_MODE, hljs.APOS_STRING_MODE, hljs.QUOTE_STRING_MODE]
   };
   return {
     case_insensitive: true,
@@ -2360,6 +2356,15 @@ hljs.LANGUAGES['coffeescript'] = function(hljs) {
     contains: [hljs.HASH_COMMENT_MODE]
   };
 
+  var COFFEE_EMPTY_REGEX_MODE = {
+    className: 'regexp', begin: '//[gim]*'
+  };
+
+  var COFFEE_REGEX_MODE = {
+    className: 'regexp',
+    begin: '/\\S(\\\\.|[^\\n])*/[gim]*' // \S is required to parse x / 2 / 3 as two divisions
+  };
+
   var COFFEE_FUNCTION_DECLARATION_MODE = {
     className: 'function',
     begin: JS_IDENT_RE + '\\s*=\\s*(\\(.+\\))?\\s*[-=]>',
@@ -2398,6 +2403,8 @@ hljs.LANGUAGES['coffeescript'] = function(hljs) {
         hljs.HASH_COMMENT_MODE,
         // CoffeeScript specific modes
         COFFEE_HEREGEX_MODE,
+        COFFEE_EMPTY_REGEX_MODE,
+        COFFEE_REGEX_MODE,
         COFFEE_EMBEDDED_JAVASCRIPT,
         COFFEE_FUNCTION_DECLARATION_MODE
       ]
@@ -2767,13 +2774,10 @@ hljs.LANGUAGES['vala'] = function(hljs) {
 hljs.LANGUAGES['bash'] = function(hljs) {
   var BASH_LITERAL = 'true false';
   var VAR1 = {
-    className: 'variable',
-    begin: '\\$([a-zA-Z0-9_]+)\\b'
+    className: 'variable', begin: '\\$[a-zA-Z0-9_]+\\b'
   };
   var VAR2 = {
-    className: 'variable',
-    begin: '\\$\\{(([^}])|(\\\\}))+\\}',
-    contains: [hljs.C_NUMBER_MODE]
+    className: 'variable', begin: '\\${([^}]|\\\\})+}'
   };
   var QUOTE_STRING = {
     className: 'string',
@@ -2791,7 +2795,7 @@ hljs.LANGUAGES['bash'] = function(hljs) {
   var TEST_CONDITION = {
     className: 'test_condition',
     begin: '', end: '',
-    contains: [QUOTE_STRING, APOS_STRING, VAR1, VAR2, hljs.C_NUMBER_MODE],
+    contains: [QUOTE_STRING, APOS_STRING, VAR1, VAR2],
     keywords: {
       literal: BASH_LITERAL
     },
@@ -2813,7 +2817,6 @@ hljs.LANGUAGES['bash'] = function(hljs) {
         VAR1,
         VAR2,
         hljs.HASH_COMMENT_MODE,
-        hljs.C_NUMBER_MODE,
         QUOTE_STRING,
         APOS_STRING,
         hljs.inherit(TEST_CONDITION, {begin: '\\[ ', end: ' \\]', relevance: 0}),
@@ -2992,7 +2995,7 @@ hljs.LANGUAGES['glsl'] = function(hljs) {
         {
           className: 'preprocessor',
           begin: '#', end: '$'
-        },
+        }
       ]
     }
   };
@@ -3274,7 +3277,7 @@ hljs.LANGUAGES['nginx'] = function(hljs) {
       contains: [
         hljs.HASH_COMMENT_MODE,
         {
-          begin: hljs.UNDERSCORE_IDENT_RE, end: ';|{', returnBegin: true,
+          begin: hljs.UNDERSCORE_IDENT_RE + '\\s', end: ';|{', returnBegin: true,
           contains: [
             {
               className: 'title',
@@ -3369,6 +3372,105 @@ hljs.LANGUAGES['rib'] = function(hljs) {
       ]
     }
   };
+}(hljs);
+hljs.LANGUAGES['clojure'] = function(hljs) {
+  var keywords = {
+    built_in:
+      // Clojure keywords
+      'def cond apply if-not if-let if not not= = &lt; < > &lt;= <= >= == + / * - rem '+
+      'quot neg? pos? delay? symbol? keyword? true? false? integer? empty? coll? list? '+
+      'set? ifn? fn? associative? sequential? sorted? counted? reversible? number? decimal? '+
+      'class? distinct? isa? float? rational? reduced? ratio? odd? even? char? seq? vector? '+
+      'string? map? nil? contains? zero? instance? not-every? not-any? libspec? -> ->> .. . '+
+      'inc compare do dotimes mapcat take remove take-while drop letfn drop-last take-last '+
+      'drop-while while intern condp case reduced cycle split-at split-with repeat replicate '+
+      'iterate range merge zipmap declare line-seq sort comparator sort-by dorun doall nthnext '+
+      'nthrest partition eval doseq await await-for let agent atom send send-off release-pending-sends '+
+      'add-watch mapv filterv remove-watch agent-error restart-agent set-error-handler error-handler '+
+      'set-error-mode! error-mode shutdown-agents quote var fn loop recur throw try monitor-enter '+
+      'monitor-exit defmacro defn defn- macroexpand macroexpand-1 for doseq dosync dotimes and or '+
+      'when when-not when-let comp juxt partial sequence memoize constantly complement identity assert '+
+      'peek pop doto proxy defstruct first rest cons defprotocol cast coll deftype defrecord last butlast '+
+      'sigs reify second ffirst fnext nfirst nnext defmulti defmethod meta with-meta ns in-ns create-ns import '+
+      'intern refer keys select-keys vals key val rseq name namespace promise into transient persistent! conj! '+
+      'assoc! dissoc! pop! disj! import use class type num float double short byte boolean bigint biginteger '+
+      'bigdec print-method print-dup throw-if throw printf format load compile get-in update-in pr pr-on newline '+
+      'flush read slurp read-line subvec with-open memfn time ns assert re-find re-groups rand-int rand mod locking '+
+      'assert-valid-fdecl alias namespace resolve ref deref refset swap! reset! set-validator! compare-and-set! alter-meta! '+
+      'reset-meta! commute get-validator alter ref-set ref-history-count ref-min-history ref-max-history ensure sync io! '+
+      'new next conj set! memfn to-array future future-call into-array aset gen-class reduce merge map filter find empty '+
+      'hash-map hash-set sorted-map sorted-map-by sorted-set sorted-set-by vec vector seq flatten reverse assoc dissoc list '+
+      'disj get union difference intersection extend extend-type extend-protocol int nth delay count concat chunk chunk-buffer '+
+      'chunk-append chunk-first chunk-rest max min dec unchecked-inc-int unchecked-inc unchecked-dec-inc unchecked-dec unchecked-negate '+
+      'unchecked-add-int unchecked-add unchecked-subtract-int unchecked-subtract chunk-next chunk-cons chunked-seq? prn vary-meta '+
+      'lazy-seq spread list* str find-keyword keyword symbol gensym force rationalize'
+   };
+
+  var CLJ_IDENT_RE = '[a-zA-Z_0-9\\!\\.\\?\\-\\+\\*\\/\\<\\=\\>\\&\\#\\$\';]+';
+  var SIMPLE_NUMBER_RE = '[\\s:\\(\\{]+\\d+(\\.\\d+)?';
+
+  var NUMBER = {
+    className: 'number', begin: SIMPLE_NUMBER_RE,
+    relevance: 0
+  };
+  var STRING = {
+    className: 'string',
+    begin: '"', end: '"',
+    contains: [hljs.BACKSLASH_ESCAPE],
+    relevance: 0
+  };
+  var COMMENT = {
+    className: 'comment',
+    begin: ';', end: '$',
+    relevance: 0
+  };
+  var COLLECTION = {
+    className: 'collection',
+    begin: '[\\[\\{]', end: '[\\]\\}]'
+  };
+  var HINT = {
+    className: 'comment',
+    begin: '\\^' + CLJ_IDENT_RE
+  };
+  var HINT_COL = {
+    className: 'comment',
+    begin: '\\^\\{', end: '\\}'
+  };
+  var KEY = {
+    className: 'attribute',
+    begin: '[:]' + CLJ_IDENT_RE
+  };
+  var LIST = {
+    className: 'list',
+    begin: '\\(', end: '\\)',
+    relevance: 0
+  };
+  var BODY = {
+    endsWithParent: true, excludeEnd: true,
+    keywords: {literal: 'true false nil'},
+    relevance: 0
+  };
+  var TITLE = {
+    keywords: keywords,
+    lexems: CLJ_IDENT_RE,
+    className: 'title', begin: CLJ_IDENT_RE,
+    starts: BODY
+  };
+
+  LIST.contains = [{className: 'comment', begin: 'comment'}, TITLE];
+  BODY.contains = [LIST, STRING, HINT, HINT_COL, COMMENT, KEY, COLLECTION, NUMBER];
+  COLLECTION.contains = [LIST, STRING, HINT, COMMENT, KEY, COLLECTION, NUMBER];
+
+  return {
+    case_insensitive: true,
+    defaultMode: {
+      illegal: '\\S',
+      contains: [
+        COMMENT,
+        LIST
+      ]
+    }
+  }
 }(hljs);
 hljs.LANGUAGES['rust'] = function(hljs) {
   var TITLE = {
@@ -3499,7 +3601,7 @@ hljs.LANGUAGES['r'] = function(hljs) {
           end: "'",
           contains: [hljs.BACKSLASH_ESCAPE],
           relevance: 0
-        },
+        }
       ]
     }
   };

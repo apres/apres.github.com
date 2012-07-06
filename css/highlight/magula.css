@@ -14,7 +14,8 @@ pre code {
 
 pre code,
 pre .ruby .subst,
-pre .lisp .title {
+pre .lisp .title,
+pre .clojure .built_in {
   color: black;
 }
 
@@ -78,7 +79,8 @@ pre .shebang,
 pre .apache .sqbracket,
 pre .nginx .built_in,
 pre .tex .formula,
-pre .input_number {
+pre .input_number,
+pre .clojure .attribute {
   color: #00e;
 }
 
