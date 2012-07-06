@@ -43,18 +43,23 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     }
   }
 
+  var asyncWidget = function(Constructor, elem, params) {
+    var ready = sinon.spy();
+    var widget = new Constructor(elem, params, ready);
+    assert.instanceOf(widget, constructor);
+    assert.strictEqual(widget.$el, elem);
+    assert(ready.withArgs(false).calledOnce, 'widgetReady(false) not called');
+    assert(ready.calledTwice, 'widgetReady() not called');
+    return widget;
+  }
+
   suite('include widget');
   sinonTest('#with src', function(sandbox, done) {
-    var ready = sandbox.spy();
     var findWidgets = sandbox.stub(apres, 'findWidgets');
     requirejs(['widget/include'], function(IncludeWidget) {
       var elem = new Elem;
       var data = "Include This!";
-      var widget = new IncludeWidget(elem, {src: new Promise(data)}, ready);
-      assert.instanceOf(widget, IncludeWidget);
-      assert.strictEqual(widget.$el, elem);
-      assert(ready.withArgs(false).calledOnce, 'widgetReady(false) not called');
-      assert(ready.calledTwice, 'widgetReady() not called');
+      var widget = asyncWidget(IncludeWidget, elem, {src: new Promise(data)});
       assert(elem.html.withArgs(data).calledOnce, 'elem.html() not called');
       assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
       done();
@@ -62,16 +67,12 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
   });
   
   sinonTest('#escape', function(sandbox, done) {
-    var ready = sandbox.spy();
     var findWidgets = sandbox.stub(apres, 'findWidgets');
     requirejs(['widget/include'], function(IncludeWidget) {
       var elem = new Elem;
       var data = '<tag foo="wow"> & &entity;';
       var expected = '&lt;tag foo=&quot;wow&quot;&gt; &amp; &entity;';
-      var widget = new IncludeWidget(elem, {src: new Promise(data), escape: true}, ready);
-      assert.instanceOf(widget, IncludeWidget);
-      assert(ready.withArgs(false).calledOnce, 'widgetReady(false) not called');
-      assert(ready.calledTwice, 'widgetReady() not called');
+      var widget = asyncWidget(IncludeWidget, elem, {src: new Promise(data), escape: true});
       assert(elem.html.withArgs(expected).calledOnce, elem.html.args[0][0]);
       assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
       done();
@@ -98,5 +99,4 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
       done();
     });
   });
-
 });
