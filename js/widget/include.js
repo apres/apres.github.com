@@ -25,11 +25,9 @@ define(['apres'], function(apres) {
       widgetReady();
     }
 
-    /**
-     * Get or set the content source URL
-     * If set to a new url, it will be fetched and
-     * included into the widget element
-     */
+    // Get or set the content source URL
+    // If set to a new url, it will be fetched and
+    // included into the widget element
     this.src = function(url) {
       if (typeof url === 'undefined') {
         return srcUrl;
@@ -43,7 +41,6 @@ define(['apres'], function(apres) {
     }
 
     if (params) {
-      // this.action = params.action || 'insert';
       this.escape = params.escape || false;
       if (params.src) {
         widgetReady(false);
@@ -56,14 +53,6 @@ define(['apres'], function(apres) {
       type: 'textSrc', 
       descr:'Path to resource to be included',
     },
-    /*
-    action: {
-      descr: 'How the source resource will be included '
-           + 'in the widget element, one of: '
-           + '"insert", "replace", "prepend", "append"',
-      default: 'insert',
-    },
-    */
     escape: {
       type: 'bool', 
       descr:'If the source text should be html-escaped when included',
