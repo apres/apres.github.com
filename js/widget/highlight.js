@@ -2,29 +2,24 @@
 // Part of the Apres suite http://apres.github.com
 // Apres is released under the MIT license
 
-/* Widget parameters:
- * @src - The source URL of the source code to highlight
- *
- * @selector - jQuery selector of the element containing
- *             the raw source code in the page. Usually a
- *             <script type="text/plain"> element works
- *             well for this purpose. Note if neither
- *             @src or @selector is specified, it will
- *             attempt to find a <script> tag inside the
- *             widget element containing the source code
- *             to highlight.
- *
- * @language - Name of language of the source code
- *             being highlighted. If omitted, it
- *             will guess using heuristics.
- *
- * @tab - If specified, tabs are converted into
- *        this many spaces.
- *
- * @br - If true, then <br> tags are inserted for line breaks
- *       in the code. Useful if the code is not inserted into
- *       a <pre> tag container.
- */
+// Widget parameters:
+//
+// **src** The source URL of the source code to highlight
+//
+// **selector** jQuery selector of the element containing the raw source code
+// in the page. Usually a <script type="text/plain"> element works well for
+// this purpose. Note if neither @src or @selector is specified, it will
+// attempt to find a <script> tag inside the widget element containing the
+// source code to highlight.
+//
+// **language** Name of language of the source code being highlighted. 
+// If omitted, it will guess based on source url, or heuristics.
+//
+// **tab** If specified, tabs are converted into this many spaces.
+//
+// **br** If true, then <br> tags are inserted for line breaks in the code.
+// Useful if the code is not inserted into a <pre> tag container.
+//
 
 define(
   ['require', 'jquery', 'highlight'],
@@ -32,7 +27,7 @@ define(
 
     var HighlightWidget = function(elem, params) {
       var elem = $(elem);
-      var srcUrl, code, language;
+      var srcUrl, code, language, inferredLang;
 
       this.useBr = false;
 
@@ -52,25 +47,22 @@ define(
         }
       }
 
-      /**
-       * Get or set the source code language name
-       * If set to a new value with source code loaded,
-       * it will be re-rendered immediately.
-       */
+      //## Get or Set Language Name
+      // Get or set the source code language name If set to a new value with
+      // source code loaded, it will be re-rendered immediately.
       this.language = function(newLang) {
         if (typeof newLang === 'undefined') {
           return language;
         } else if (newLang !== language) {
           language = newLang;
+          inferredLang = undefined;
           code && elem.html(makeHtml());
         }
       }
 
-      /**
-       * Get or set the source code URL
-       * If set to a new url, it will be fetched and
-       * rendered into the widget element
-       */
+      //## Get or Set Source URL
+      // Get or set the source code URL If set to a new url, it will be
+      // fetched and rendered into the widget element
       this.src = function(url) {
         if (typeof url === 'undefined') {
           return srcUrl;
@@ -79,6 +71,20 @@ define(
           code = null;
           elem.html('');
         } else if (url !== srcUrl) {
+          if (!language || language === inferredLang) {
+            // Derive language from file extension
+            var file = url.split(/[?#]/)[0];
+            var suffix = file.slice(file.lastIndexOf('.'));
+            language = inferredLang = {
+              '.js': 'javascript',
+              '.css': 'css',
+              '.html': 'html',
+              '.xml': 'xml',
+              '.md': 'markdown', '.markdown': 'markdown',
+              '.json': 'json',
+              '.coffee': 'coffeescript',
+            }[suffix];
+          }
           srcUrl = url;
           // Use the require text plugin to fetch to allow
           // apps to take advantage of requirejs pathing features
@@ -90,10 +96,9 @@ define(
         }
       }
 
-      /**
-       * Get or set the source code text
-       * When set, it will be rendered into the widget element
-       */
+      //## Get or Set Source Text
+      // Get or set the source code text When set, 
+      // it will be rendered into the widget element
       this.code = function(text) {
         if (typeof text === 'undefined') {
           return code;
@@ -107,6 +112,7 @@ define(
         srcUrl = null;
       }
 
+      //## Process Widget Parameters
       if (params) {
         this.useBr = params.br || params.useBr;
         language = params.language;
