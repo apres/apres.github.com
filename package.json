@@ -27,8 +27,8 @@
     "node-inspector": "0.1.x"
   }
   , "scripts": {
-      "dtest": "./node_modules/.bin/mocha --reporter tap --ui qunit --debug-brk",
-      "test": "./node_modules/.bin/mocha --reporter tap --ui qunit",
+      "dtest": "./node_modules/.bin/mocha --reporter spec --no-colors --ui qunit --debug-brk",
+      "test": "./node_modules/.bin/mocha --reporter spec --no-colors --ui qunit",
       "start": "node server.js"
   }
 }
