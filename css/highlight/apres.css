@@ -16,6 +16,8 @@ code .tag .title {
   color: purple;
 }
 
+code .bullet,
+code .header,
 code .keyword {
   font-weight: bold;
   color: purple;
@@ -53,6 +55,7 @@ code .tag .title {
 }
 
 code .tag .attribute,
+code .link_label,
 code .params {
   color: darkgreen;
 }
@@ -107,4 +110,17 @@ code .xmlDocTag {
 
 code .vhdl .typename { 
   font-weight: bold; 
+}
+
+code .bullet {
+  text-shadow: 0 0 3px black;
+}
+
+code .code {
+  background: #eee;
+}
+
+code .link_url {
+  color: blue;
+  text-decoration: underline;
 }
