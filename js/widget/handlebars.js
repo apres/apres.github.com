@@ -5,11 +5,12 @@
 // Part of the Apres suite http://apres.github.com
 // Apres is released under the MIT license
 
-define(['apres', 'handlebars'], function(apres, handlebars) {
+define(['apres', 'handlebars', 'jquery'], function(apres, handlebars, $) {
 
   var HandlebarsWidget = function(elem, params, widgetReady) {
     var srcUrl;
     this.$el = elem;
+    this.when = $.when;
     var template;
 
     var compile = function(srcText) {
@@ -18,7 +19,7 @@ define(['apres', 'handlebars'], function(apres, handlebars) {
 
     // Render the template with the supplied context object
     // into the widget element
-    
+
     var render = this.render = (function(context) {
       if (template) {
         var text = template(context);
@@ -31,7 +32,7 @@ define(['apres', 'handlebars'], function(apres, handlebars) {
     }).bind(this);
 
     // Get or set the template source URL
-    
+
     this.src = function(url) {
       if (typeof url === 'undefined') {
         return srcUrl;
@@ -48,7 +49,7 @@ define(['apres', 'handlebars'], function(apres, handlebars) {
     if (params) {
       if (params.src && params.context) {
         widgetReady(false);
-        $.when(params.src, params.context).done(
+        this.when(params.src, params.context).done(
           function(src, context) {
             compile(src);
             render(context);
