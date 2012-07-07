@@ -1,6 +1,8 @@
 if (!requirejs) var requirejs = require('./requirejs_config').config();
 
-requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
+requirejs(
+  ['apres', 'chai', 'sinon', 'jquery'], 
+  function(apres, chai, sinon, $) {
   var assert = chai.assert;
 
   // Sinon test wrapper automatically creates a sandbox
@@ -24,22 +26,19 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
 
   var Elem = function() {
     this.html = sinon.spy();
+    this.find = sinon.spy();
   }
 
   var Promise = function(data) {
-    this.done = function(func) {
-      func(data);
-    }
+    var p = $.Deferred();
+    p.resolve(data);
+    return p.promise();
   }
 
   var srcPromise = function(expectedUrl, data) {
     return function(url, type) {
       assert.strictEqual(url, expectedUrl);
-      return {
-        done: function(func) {
-          func(data);
-        }
-      };
+      return Promise(data);
     }
   }
 
@@ -95,6 +94,61 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
       var src = sandbox.stub(apres, 'srcPromise', srcPromise(url, data));
       widget.src(url);
       assert(elem.html.withArgs(data).calledOnce, elem.html.args[0][0]);
+      assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
+      done();
+    });
+  });
+
+  suite('handlebars widget');  
+  sinonTest('#with src', function(sandbox, done) {
+    var ready = sandbox.spy();
+    var findWidgets = sandbox.stub(apres, 'findWidgets');
+    requirejs(['widget/handlebars'], function(HandlebarsWidget) {
+      var elem = new Elem;
+      var data = "My Name is: {{name}}";
+      var widget = new HandlebarsWidget(elem, {src: new Promise(data)}, ready);
+      assert.instanceOf(widget, HandlebarsWidget);
+      assert(!ready.withArgs(false).calledOnce, 'widgetReady(false) called');
+      assert(!elem.html.called, 'elem.html() called');
+      assert(!findWidgets.called, 'findWidgets() called');
+
+      widget.render({name: 'Flomboozy'});
+      assert(elem.html.withArgs('My Name is: Flomboozy').calledOnce, 'elem.html() not called');
+      assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
+      done();
+    });
+  });
+
+  sinonTest('#with src and context', function(sandbox, done) {
+    var findWidgets = sandbox.stub(apres, 'findWidgets');
+    requirejs(['widget/handlebars'], function(HandlebarsWidget) {
+      var elem = new Elem;
+      var data = "My Name is: {{name}}";
+      var widget = asyncWidget(HandlebarsWidget, 
+        elem, {src: new Promise(data), context: new Promise({name: 'Mudd'})});
+      assert(elem.html.withArgs('My Name is: Mudd').calledOnce, 'elem.html() not called');
+      assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
+      done();
+    });
+  });
+
+  sinonTest('#no initial params', function(sandbox, done) {
+    var ready = sandbox.spy();
+    var findWidgets = sandbox.stub(apres, 'findWidgets');
+    requirejs(['widget/handlebars'], function(HandlebarsWidget) {
+      var elem = new Elem;
+      var widget = new HandlebarsWidget(elem, {}, ready);
+      assert.instanceOf(widget, HandlebarsWidget);
+      assert(!ready.withArgs(false).calledOnce, 'widgetReady(false) called');
+      assert(!elem.html.called, 'elem.html() called');
+      assert(!findWidgets.called, 'findWidgets() called');
+
+      var data = "Your Name is: {{name}}";
+      var url = 'handlebars/data/path';
+      var src = sandbox.stub(apres, 'srcPromise', srcPromise(url, data));
+      widget.src(url);
+      widget.render({name: 'FooBar'});
+      assert(elem.html.withArgs('Your Name is: FooBar').calledOnce, 'elem.html() not called');
       assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
       done();
     });
