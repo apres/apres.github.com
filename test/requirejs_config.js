@@ -11,7 +11,7 @@ exports.config = function() {
     return require('jquery');
   });
   // load the version of apres under test to finish the requirejs config
-  requirejs(['apres-dev']);  
+  requirejs(['apres-dev']);
   return requirejs;
 }
 

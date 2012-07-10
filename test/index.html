@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-apres-controller="">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <title>Apres Test Suite</title>
+  <script data-main="../js/lib/apres-dev.js" src="../js/lib/require-1.0.8.js"></script>
+  <script src="../js/lib/mocha.js"></script>
+  <script src="test.js"></script>
+  <link href='../css/base.css' rel='stylesheet' type='text/css'>
+  <link href='../css/grid.css' rel='stylesheet' type='text/css'>
+  <link href='../css/ui.css' rel='stylesheet' type='text/css'>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: url(../img/stripe-bkg.png);
+      margin: 20px;
+    }
+    #left-column {
+      position:relative;
+      top: 0.75em;
+      left: 2px;
+      opacity: 0.75;
+      border: 3px solid #fff;
+      background-color: #eeeeee;
+      float: left;
+      width: 300px;
+      height: 300px;
+      border-radius: 10px 0 0 10px;
+      -moz-border-radius: 10px 0 0 10px;
+      -webkit-border-radius: 10px 0 0 10px;
+      box-shadow: 0 0 20px #ddd;
+    }
+    #left-column h1 {
+      text-align: center;
+      background-color: #dddddd;
+      border-bottom: 2px solid #ffffff;
+      padding: 6px;
+      font-size: 3.2rem;
+      border-radius: 10px 0 0 0;
+      -moz-border-radius: 10px 0 0 0;
+      -webkit-border-radius: 10px 0 0 0;
+      text-shadow: 1px 1px #fff;
+    }
+    #left-column p {
+      padding: 0 1em;
+    }
+    .reflection {
+      position: absolute;;
+      width: 100%;
+      height: 34px;
+      background: #fff;
+      opacity: 0.3;
+      border-radius: 0 0 50% 50%;
+      -moz-border-radius: 0 0 50% 50%;
+      -webkit-border-radius: 0 0 50% 50%;
+    }
+    #right-column {
+      position: absolute;
+      left: 324px;
+      margin-right: 20px;
+      margin-bottom: 40px;
+      min-width: 350px;
+    }
+    .content {
+      background: white;
+      border-radius: 8px;
+      -moz-border-radius: 8px;
+      -webkit-border-radius: 8px;
+      box-shadow: 0 0 20px #bbb;
+      padding: 2em;
+    }
+    #stats {
+      position: absolute;
+      left: -250px;
+      top: 110px;
+    }
+    #stats .passes,
+    #stats .failures,
+    #stats .duration {
+      font-size: 2.0rem;
+    }
+    #report a {
+      color: black;
+    }
+    #report h1 {
+      font-size: 2.5rem;
+      padding: 0;
+      line-height: 1em;
+      border-bottom: 2px solid #ddd;
+    }
+    #report h2 {
+      font-size: 2.0rem;
+      font-weight: normal;
+      padding: 0;
+      margin: 0;
+    }
+    #report .duration {
+      font-size: 1.5rem;
+      padding-left: 1em;
+      color: #666;
+    }
+    #report .error {
+      color: #f44;
+      margin-top: 0.5em;
+      border-left: 4px double #f44;
+      border-radius: 10px;
+      -moz-border-radius: 10px;
+      -webkit-border-radius: 10px;
+      padding-left: 1em;
+    }
+    #report .suite {
+      margin-bottom: 2em;
+    }
+    #report .suite ul {
+      margin: 0;
+    }
+    footer {
+      text-align: center;
+      margin: 40px 20px 20px 20px;
+      padding 0 3em 0 3em;
+    }
+  </style>
+</head>
+<body>
+  <div id="background">
+    <section id="left-column">
+      <div class="reflection"></div>
+      <h1>Apres Test Suite</h1>
+    </section>
+    <div id="right-column">
+      <div id="mocha" class="content"></div>
+      <footer class="flush text-center">
+        Apres is an <a href="http://www.opensource.org/licenses/mit-license.php">
+        MIT Licensed</a> open source project.
+        &nbsp;&bull;&nbsp;
+        <a href="https://twitter.com/#!/ApresProject">Twitter</a>
+        &nbsp;&bull;&nbsp;
+        <a href="https://github.com/apres/apres.github.com">Github</a>
+        &nbsp;&bull;&nbsp;
+        #apres on irc.freenode.net
+      </footer>
+    </div>
+  </div>
+</body>
+</html>

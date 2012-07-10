@@ -1,5 +1,3 @@
-if (!requirejs) var requirejs = require('./requirejs_config').config();
-
 requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
   var expect = chai.expect, assert = chai.assert;
 
