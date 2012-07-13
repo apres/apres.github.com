@@ -1,6 +1,6 @@
 requirejs(
   ['apres', 'chai', 'sinon', 'jquery', './widget.js', 
-   'widget/include', 'widget/handlebars'], 
+   'widget/include', 'widget/handlebars', 'widget/jade'], 
   function(apres, chai, sinon, $, widget) {
   var assert = chai.assert;
 
@@ -101,6 +101,61 @@ requirejs(
       handlebars.src(url);
       handlebars.render({name: 'FooBar'});
       assert(elem.html.withArgs('Your Name is: FooBar').calledOnce, 'elem.html() not called');
+      assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
+      done();
+    });
+  });
+
+  suite('jade widget');  
+  widget.test('#with src', function(sandbox, done) {
+    var ready = sandbox.spy();
+    var findWidgets = sandbox.stub(apres, 'findWidgets');
+    requirejs(['widget/jade'], function(JadeWidget) {
+      var elem = new widget.Elem;
+      var data = "p Goodbye #{name}";
+      var jade = new JadeWidget(elem, {src: new widget.Promise(data)}, ready);
+      assert.instanceOf(jade, JadeWidget);
+      assert(!ready.withArgs(false).calledOnce, 'widgetReady(false) called');
+      assert(!elem.html.called, 'elem.html() called');
+      assert(!findWidgets.called, 'findWidgets() called');
+
+      jade.render({name: 'Batman'});
+      assert(elem.html.withArgs('<p>Goodbye Batman</p>').calledOnce, 'elem.html() not called');
+      assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
+      done();
+    });
+  });
+
+  widget.test('#with src and context', function(sandbox, done) {
+    var findWidgets = sandbox.stub(apres, 'findWidgets');
+    requirejs(['widget/jade'], function(JadeWidget) {
+      var elem = new widget.Elem;
+      var data = "p Goodbye #{name}";
+      var jade = widget.asyncWidget(JadeWidget, 
+        elem, {src: new widget.Promise(data), context: new widget.Promise({name: 'Mudd'})});
+      assert(elem.html.withArgs('<p>Goodbye Mudd</p>').calledOnce, 'elem.html() not called');
+      assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
+      done();
+    });
+  });
+
+  widget.test('#no initial params', function(sandbox, done) {
+    var ready = sandbox.spy();
+    var findWidgets = sandbox.stub(apres, 'findWidgets');
+    requirejs(['widget/jade'], function(JadeWidget) {
+      var elem = new widget.Elem;
+      var jade = new JadeWidget(elem, {}, ready);
+      assert.instanceOf(jade, JadeWidget);
+      assert(!ready.withArgs(false).calledOnce, 'widgetReady(false) called');
+      assert(!elem.html.called, 'elem.html() called');
+      assert(!findWidgets.called, 'findWidgets() called');
+
+      var data = "p Farewell #{name}";
+      var url = 'jade/data/path';
+      var src = sandbox.stub(apres, 'srcPromise', widget.srcPromise(url, data));
+      jade.src(url);
+      jade.render({name: 'FooBar'});
+      assert(elem.html.withArgs('<p>Farewell FooBar</p>').calledOnce, 'elem.html() not called');
       assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
       done();
     });
