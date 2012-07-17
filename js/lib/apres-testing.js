@@ -157,7 +157,6 @@ define(['apres', 'sinon', 'chai', 'jquery'], function(apres, sinon, chai, jquery
       function(sandbox, done) {
         var elem = testing.BasicElem();
         requirejs([moduleName], function(Constructor) {
-          if (!Constructor) assert.fail(moduleName + ' did not load');
           assert.isFunction(Constructor, moduleName + ' did not return a constructor function');
           var widget = new Constructor(elem, params, sinon.spy());
           assert.instanceOf(widget, Constructor, 
