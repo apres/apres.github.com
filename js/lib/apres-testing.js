@@ -124,13 +124,32 @@ define(['apres', 'sinon', 'chai', 'jquery'], function(apres, sinon, chai, jquery
 
   //### Basic Element Mock
   //
-  // Provides a few spy methods for simple uses.
+  // Provides spy methods for simple uses.
   testing.BasicElem = function() {
     return {
       html: sinon.spy(),
       find: sinon.spy(),
       attr: sinon.spy(),
+      addClass: sinon.spy(),
+      removeClass: sinon.spy(),
+      trigger: sinon.spy(),
     }
+  }
+
+  //### Mock Element with Attributes
+  //
+  // Provides attribute getter/setter
+  testing.AttrElem = function(attrs) {
+    var attrs = attrs || {};
+    var elem = testing.BasicElem();
+    elem.attr = function(name, value) {
+      if (typeof value === 'undefined') {
+        return attrs[name];
+      } else {
+        attrs[name] = value;
+      }
+    }
+    return elem;
   }
 
   //## Basic Widget Test Cases
