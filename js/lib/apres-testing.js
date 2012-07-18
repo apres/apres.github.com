@@ -142,7 +142,7 @@ define(['apres', 'sinon', 'chai', 'jquery'], function(apres, sinon, chai, jquery
   testing.AttrElem = function(attrs) {
     var attrs = attrs || {};
     var elem = testing.BasicElem();
-    elem.attr = function(name, value) {
+    elem.attr = elem.getAttribute = elem.setAttribute = function(name, value) {
       if (typeof value === 'undefined') {
         return attrs[name];
       } else {
