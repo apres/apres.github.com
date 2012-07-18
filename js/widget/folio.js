@@ -107,56 +107,63 @@ define(['jquery'], function($) {
       elem = $(elem);
       if (title == null) var title = elem.attr(titleAttrName);
       var page = {elem: elem, title: title, index: index};
-      var length = this.pages.push(page);
       if (typeof index === 'undefined') {
+        var length = this.pages.push(page);
         page.index = length - 1;
       } else {
-        this.pages.sort(function(a, b) {
-          return a.index - b.index;
+        var before = this.pages.slice(0, index);
+        var after = this.pages.slice(index);
+        var pages = before.concat([page], after);
+        $.each(pages, function(i, p) {
+          p.index = i;
         });
+        this.pages = pages;
       }
-      elem.trigger('folioPagesChanged', this);
+      this.$el.trigger('folioPagesChanged', this);
       return page;
     }
 
     //## Remove a Page
     //
-    // **page** The page object, or integer page index to remove from the
-    // folio. If this is the current page, the current page will be changed
-    // to an adjacent page if possible.
-    this.removePage = function(page) {
-      var index, newCurrentPage;
-      if (typeof page === 'number') {
-        index = page;
-        page = this.pages[index];
-      } else {
-        for (index = 0; index < this.pages.length; index++) {
-          if (page === this.pages[index]) {
-            break;
+    // **index** The integer page index to remove from the folio. If this is
+    // the current page, the current page will be changed to an adjacent page
+    // if possible.
+    //
+    // Return `true` if a page was removed.
+    this.removePage = function(index) {
+      var newCurrentPage,
+          folio = this,
+          page = this.pages[index],
+          removed = false,
+          pages = [];
+      $.each(this.pages, function(oldIndex, oldPage) {
+        if (oldPage && oldPage !== page) {
+          oldPage.index = pages.length;
+          pages.push(oldPage);
+        } else {
+          removed = true;
+        }
+        if (currentPage && page === oldPage && page === currentPage) {
+          if (pages.length) {
+            newCurrentPage = pages[pages.length - 1];
+          } else {
+            newCurrentPage = folio.pages[oldIndex + 1];
           }
         }
-      }
-      if (page === this.pages[index]) {
-        var pages = [];
-        $.each(this.pages, function(oldIndex, oldPage) {
-          if (oldPage && oldPage !== page) {
-            oldPage.index = pages.length;
-            pages.push(oldPage);
-          } else if (currentPage && page === currentPage) {
-            if (pages.length) {
-              newCurrentPage = pages[pages.length - 1];
-            } else {
-              newCurrentPage = this.pages[oldIndex + 1];
-            }
-          }
-        });
+      });
+      if (removed) {
         this.pages = pages;
         this.$el.trigger('folioPagesChanged', this);
-        if (page === currentPage) {
-          this.currentPage(newCurrentPage.index);
+        if (newCurrentPage) this.currentPage(newCurrentPage.index);
+        if (pages.length === 0) {
+          if (currentPage) currentPage.elem.removeClass('folio-current-page');
+          currentPage = undefined;
+          page.elem.trigger('folioCurrentPage', this);
         }
       }
+      return removed;
     }
+
     this.findPages();
   }
   return FolioWidget;

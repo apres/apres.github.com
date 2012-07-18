@@ -144,7 +144,8 @@ requirejs(
       var elem = elemWithPages('Page Uno', 'Page Dos', 'Page Tres');
       var pageElems = elem.find();
       var folio = new FolioWidget(elem);
-      folio.currentPage(2);
+      var page = folio.currentPage(2);
+      assert.strictEqual(page.index, 2);
       var page = folio.previousPage();
       assert.strictEqual(page.index, 1);
       assert.strictEqual(page, folio.currentPage());
@@ -156,5 +157,141 @@ requirejs(
       assert.strictEqual(page, folio.currentPage());
     });
 
+    testing.test('#add page append', function() {
+      var elem = elemWithPages();
+      var folio = new FolioWidget(elem);
+      assert.equal(folio.pages.length, 0);
+      var pageElem = testing.BasicElem();
+      var page = folio.addPage(pageElem, 'Foo');
+      assert.equal(folio.pages.length, 1);
+      assert.deepEqual(page.elem, $(pageElem));
+      assert.strictEqual(page.index, 0);
+      assert.strictEqual(page.title, 'Foo');
+      assert.strictEqual(page, folio.pages[page.index]);
+      var page = folio.addPage(pageElem, 'Bar');
+      assert.equal(folio.pages.length, 2);
+      assert.deepEqual(page.elem, $(pageElem));
+      assert.strictEqual(page.index, 1);
+      assert.strictEqual(page.title, 'Bar');
+      assert.strictEqual(page, folio.pages[page.index]);
+    });
+
+    testing.test('#add page with attr title', function() {
+      var elem = elemWithPages();
+      var folio = new FolioWidget(elem);
+      assert.equal(folio.pages.length, 0);
+      var pageElem = testing.AttrElem({'data-page-title': 'Zappa'});
+      var page = folio.addPage(pageElem);
+      assert.equal(folio.pages.length, 1);
+      assert.deepEqual(page.elem, $(pageElem));
+      assert.strictEqual(page.title, 'Zappa');
+    });
+
+    var assertPages = function(folio, expectedTitles) {
+      var titles = [];
+      var page;
+      for (var i = 0; (page = folio.pages[i]); i++) {
+        titles.push(page.title);
+      }
+      assert.deepEqual(titles, expectedTitles);
+    }
+
+    testing.test('#add page insert', function() {
+      var elem = elemWithPages('Orange', 'Yellow', 'Green', 'Violet');
+      var folio = new FolioWidget(elem);
+      assert.equal(folio.pages.length, 4);
+      var pageElem = testing.BasicElem();
+      var page = folio.addPage(pageElem, 'Blue', 3);
+      assert.equal(folio.pages.length, 5);
+      assert.deepEqual(page.elem, $(pageElem));
+      assert.strictEqual(page.title, 'Blue');
+      assert.strictEqual(page.index, 3);
+      assert.strictEqual(page, folio.pages[3]);
+      var page = folio.addPage(pageElem, 'Red', 0);
+      assert.equal(folio.pages.length, 6);
+      assert.deepEqual(page.elem, $(pageElem));
+      assert.strictEqual(page.title, 'Red');
+      assert.strictEqual(page.index, 0);
+      assert.strictEqual(page, folio.pages[0]);
+      assertPages(folio, ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Violet']);
+    });
+
+    testing.test('#add page triggers changed event', function() {
+      var elem = elemWithPages();
+      var folio = new FolioWidget(elem);
+      var pageElem = testing.BasicElem();
+      assert(!elem.trigger.called, 'trigger called before add');
+      var page = folio.addPage(pageElem, 'foobar');
+      assert(elem.trigger.calledOnce, 'trigger not called after add');
+      assert.strictEqual(elem.trigger.args[0][0], 'folioPagesChanged');
+    });
+
+    testing.test('#remove page by index', function() {
+      var elem = elemWithPages('do', 're', 'mi', 'fa', 'so', 'la', 'ti');
+      var folio = new FolioWidget(elem);
+      assert.equal(folio.pages.length, 7);
+      var removed = folio.removePage(2);
+      assert(removed, 'removePage() returned false');
+      assertPages(folio, ['do', 're', 'fa', 'so', 'la', 'ti']);
+      var removed = folio.removePage(2);
+      assert(removed, 'removePage() returned false');
+      assertPages(folio, ['do', 're', 'so', 'la', 'ti']);
+      var removed = folio.removePage(0);
+      assert(removed, 'removePage() returned false');
+      assertPages(folio, ['re', 'so', 'la', 'ti']);
+      var removed = folio.removePage(3);
+      assert(removed, 'removePage() returned false');
+      assertPages(folio, ['re', 'so', 'la']);
+    });
+
+    testing.test('#remove page invalid index', function() {
+      var elem = elemWithPages('do', 're', 'mi');
+      var folio = new FolioWidget(elem);
+      assert.equal(folio.pages.length, 3);
+      var removed = folio.removePage(5);
+      assert(!removed, 'removePage() returned true');
+      assertPages(folio, ['do', 're', 'mi']);
+    });
+
+    testing.test('#remove current page', function() {
+      var elem = elemWithPages('do', 're', 'mi', 'fa');
+      var folio = new FolioWidget(elem);
+      assert.equal(folio.currentPage().index, 0);
+      var removed = folio.removePage(0);
+      assert(removed, 'removePage() returned false');
+      assertPages(folio, ['re', 'mi', 'fa']);
+      assert.equal(folio.currentPage().index, 0);
+      assert.equal(folio.currentPage().title, 're');
+      folio.currentPage(2);
+      assert.equal(folio.currentPage().index, 2);
+      var removed = folio.removePage(2);
+      assert(removed, 'removePage() returned false');
+      assertPages(folio, ['re', 'mi']);
+      assert.equal(folio.currentPage().index, 1);
+      assert.equal(folio.currentPage().title, 'mi');
+    });
+
+    testing.test('#remove last page', function() {
+      var elem = elemWithPages('doh');
+      var folio = new FolioWidget(elem);
+      assert.equal(folio.currentPage().index, 0);
+      assert(!elem.trigger.called, 'trigger called before remove');
+      var removed = folio.removePage(0);
+      assert(removed, 'removePage() returned false');
+      assertPages(folio, []);
+      assert.isUndefined(folio.currentPage());
+      assert(elem.trigger.calledOnce, 'trigger not called after remove');
+      assert.strictEqual(elem.trigger.args[0][0], 'folioPagesChanged');
+    });
+
+    testing.test('#remove page triggers changed event', function() {
+      var elem = elemWithPages('Foo', 'Bar');
+      var folio = new FolioWidget(elem);
+      assert(!elem.trigger.called, 'trigger called before remove');
+      var removed = folio.removePage(1);
+      assert(removed, 'removePage() returned false');
+      assert(elem.trigger.calledOnce, 'trigger not called after remove');
+      assert.strictEqual(elem.trigger.args[0][0], 'folioPagesChanged');
+    });
   }
 );
