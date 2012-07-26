@@ -9,7 +9,7 @@ define(
 
     controller.events = {
       'click button#add-markdown': function() {
-        apres.widget('#included-markdown', 'widget/markdown', function(err, widget) {
+        apres.widget('#included-markdown', 'widget/markdown', null, function(err, widget) {
           if (!err) {
             widget.src('/content/example.md');
             $('button#add-markdown').hide();
