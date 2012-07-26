@@ -188,7 +188,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
       assert.instanceOf(w, Widget);
       assert.deepEqual(w.elem, apres.$(elem));
     });
-    apres.widget(elem, Widget, callback);
+    apres.widget(elem, Widget, null, callback);
     assert.equal(callback.callCount, 1);
   });
 
@@ -309,7 +309,7 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
       assert.instanceOf(widget, MyWidget);
     });
     var widget;
-    apres.widget(new MockDomElem, 'MyWidget', callback);
+    apres.widget(new MockDomElem, 'MyWidget', null, callback);
     assert.equal(callback.callCount, 1);
   });
 

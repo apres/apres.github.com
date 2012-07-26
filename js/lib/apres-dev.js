@@ -273,7 +273,7 @@ define('apres',
     var widgetIdAttrName = 'data-apres-pvt-widget-id';
     var widgets = {};
     var widgetPending = {};
-    var setWidget = function(elem, WidgetFactory, params) {
+    var setWidget = function(elem, WidgetFactory, SkinFactory, params) {
       var oldId = elem.attr(widgetIdAttrName);
       var oldWidget = widgets[oldId];
       var widget = null;
@@ -285,7 +285,9 @@ define('apres',
       if (WidgetFactory) {
         var id = guid++;
         var registerWidget = function() {
-          widget.events && apres.delegate(widget, elem);
+          var eventElem = elem;
+          if (SkinFactory) eventElem = setSkin(elem, SkinFactory, widget);
+          widget.events && apres.delegate(widget, eventElem);
           elem.trigger('widgetReady', widget);
         }
         var widgetReady = function(isReady) {
@@ -311,7 +313,40 @@ define('apres',
       }
       return widget;
     }
-
+    // Install a skin for a widget
+    var setSkin = function(elem, SkinFactory, widget) {
+      var css, html, skinElem, wrapper;
+      var skin = new SkinFactory(elem, widget);
+      // Install skin CSS
+      if (css = skin.css) {
+        if (typeof css === 'function') css = css(widget);
+        if (typeof css === 'string') {
+          apres.linkStyleSheet(css);
+        } else {
+          for (var i = 0; i < css.length; i++) {
+            apres.linkStyleSheet(css[i]);
+          }
+        }
+      }
+      // Create skin markup and wrap it around element
+      if (html = skin.html) {
+        if (typeof html === 'function') html = html(widget);
+        skinElem = apres.$(html);
+        wrapper = skinElem.find('.skin-wrapper');
+        if (wrapper.length > 0) {
+          skinElem.insertBefore(elem);
+          wrapper.html(elem);
+        } else {
+          // Lacking a designated skin-wrapper element,
+          // we assume the skin has a single inner element
+          // that will work with `jQuery.wrap()`
+          elem.wrap(skinElem);
+        }
+      }
+      // Attach skin event handlers
+      if (skin.events) apres.delegate(skin, skinElem);
+      return skin;
+    }
     //### Manipulate Widgets
     // Get or install a widget object for an element
     //
@@ -319,6 +354,10 @@ define('apres',
     //
     // **WidgetFactory** a constructor function for the widget, or a module name
     // for the widget constructor.
+    //
+    // **SkinFactory** an optional constructor function for the widget's skin,
+    // or a module name for the skin constructor. Note if both `WidgetFactory`
+    // and `SkinFactory` are specified, they must be of the same type.
     //
     // **params** an optional parameter object passed to the WidgetFactory.
     // if not provided, the parameters will be derived from the element's
@@ -329,49 +368,60 @@ define('apres',
     // `callback(err, widget)`. this function will be called when the widget
     // is installed, or an error occurs. 
     //
-    apres.widget = function(elem, WidgetFactory, params, callback) {
-      var id, widget;
+    apres.widget = function(elem, WidgetFactory, SkinFactory, params, callback) {
+      var id, widget, modules;
       elem = apres.$(elem);
-      // `apres.widget(elem, factory)` (Setter)
+      // `apres.widget(elem)` *(getter)*
+      if (typeof WidgetFactory === 'undefined') {
+        id = elem.attr(widgetIdAttrName);
+        return typeof id !== 'undefined' ? widgets[id] : undefined;
+      }
+      // Shuffle optional arguments
+      if (typeof SkinFactory !== 'function' && typeof SkinFactory !== 'string') {
+        callback = params;
+        params = SkinFactory;
+        SkinFactory = undefined;
+      }
       if (typeof callback === 'undefined' && typeof params === 'function') {
         callback = params;
         params = undefined;
       }
-      // `apres.widget(elem)` (Getter)
-      if (typeof WidgetFactory === 'undefined') {
-        id = elem.attr(widgetIdAttrName);
-        if (typeof id !== 'undefined') {
-          return widgets[id];
-        }
-      } else {
-        // `apres.widget(elem, factoryName, [params], [callback])` (Setter)
-        if (typeof WidgetFactory === 'string') {
-          apres.require([WidgetFactory], 
-            function(factory) {
-              if (typeof factory !== 'function') {
-                var msg = 'Apres - widget module "' + WidgetFactory + '" did not return a factory function';
-                error(msg);
-                if (callback) callback(Error(msg));
-              }
-              try {
-                widget = setWidget(elem, factory, params);
-                if (callback) callback(null, widget);
-              } catch (err) {
-                if (callback) {callback(err)} else {throw err}
-                error('Error installing widget ' + WidgetFactory + ': ' + err);
-              }
-            },
-            callback
-          );
-        // `apres.widget(elem, factoryFunc, callback)`
+      // String factory names are imported async 
+      if (typeof WidgetFactory === 'string') {
+        if (typeof SkinFactory === 'string') {
+          modules = [WidgetFactory, SkinFactory];
         } else {
-          try {
-            widget = setWidget(elem, WidgetFactory, params);
-            if (callback) callback(null, widget);
-          } catch (err) {
-            if (callback) {callback(err)} else {throw err}
-            error('Error installing widget ' + WidgetFactory + ': ' + err);
-          }
+          modules = [WidgetFactory];
+        }
+        apres.require(modules, 
+          function(widgetCons, skinCons) {
+            if (typeof widgetCons !== 'function') {
+              var msg = 'Apres - widget module "' + WidgetFactory + '" did not return a factory function';
+              error(msg);
+              if (callback) callback(Error(msg));
+            }
+            if (skinCons && typeof skinCons !== 'function') {
+              var msg = 'Apres - skin module "' + SkinFactory + '" did not return a factory function';
+              error(msg);
+              if (callback) callback(Error(msg));
+            }
+            try {
+              widget = setWidget(elem, widgetCons, skinCons, params);
+              if (callback) callback(null, widget);
+            } catch (err) {
+              if (callback) {callback(err)} else {throw err}
+              error('Error installing widget ' + WidgetFactory + ': ' + err);
+            }
+          },
+          callback
+        );
+      } else {
+        try {
+          widget = setWidget(elem, WidgetFactory, SkinFactory, params);
+          if (callback) callback(null, widget);
+        } catch (err) {
+          if (callback) {callback(err)} else {throw err}
+          error('Error installing widget ' + WidgetFactory + ': ' + err);
         }
       }
     }
@@ -401,7 +451,7 @@ define('apres',
       }
       elemQueue.push(elem);
       if (!scanning) {
-        var widgetElems, i, widgetElem, widgetName;
+        var widgetElems, i, widgetElem, widgetName, widgetFactory, skinFactory, callback;
         scanning = true;
         scans = 0;
         while (scanning && (elem = elemQueue[0])) {
@@ -413,8 +463,16 @@ define('apres',
           elem.getElementsByClassName || (elem = elem.get(0));
           widgetElems = elem.getElementsByClassName('widget');
           for (i = 0; (widgetElem = widgetElems[i]); i++) {
-            var factoryName = widgetElem.getAttribute('data-widget');
-            if (factoryName) apres.widget(widgetElem, factoryName);
+            skinFactory = widgetElem.getAttribute('data-skin');
+            if (skinFactory) {
+              callback = function(widget) {
+                apres.skin(widgetElem, skinFactory, widget);
+              }
+            } else {
+              callback = undefined;
+            }
+            widgetFactory = widgetElem.getAttribute('data-widget');
+            if (widgetFactory) apres.widget(widgetElem, widgetFactory, callback);
           }
         }
         scanning = false;
@@ -442,6 +500,55 @@ define('apres',
         });
       }
     }
+
+    var cssRes = {};
+    //### Add a Style Sheet to the Document
+    // Adds a CSS `<link>` element to the `<head>` of the document 
+    //
+    // **href** the URL of the style sheet. A given link href will only be
+    // added once to a document, so this can be called multiple times for the
+    // same style sheet without issue.
+    apres.linkStyleSheet = function(href) {
+      if (!cssRes[href]) {
+        var head = doc.getElementsByTagName('html')[0];
+        if (head) {
+          var link = doc.createElement('link');
+          link.setAttribute('rel', 'stylesheet');
+          link.setAttribute('type', 'text/css');
+          link.setAttribute('href', href);
+          head.appendChild(link);
+          cssRes[href] = true;
+        } else {
+          error('Unable to load stylesheet ' + href +' no <head> element in page');
+        }
+      }
+    }
+
+    //### Apply a Skin to an Element
+    // A skin wraps an element with additional markup to decorate it, or
+    // add ui elements.
+    //
+    // **elem** the document element to wrap with the skin.
+    //
+    // **SkinFactory** a constructor function for the skin, or a module name
+    // for the skin constructor. The skin constructor returns an object
+    // with content properties. Each property is optional, and may either be
+    // a static value or a function:
+    //
+    // *css* A url string for a style sheet used by the skin, or an array of
+    // style sheet urls.
+    //
+    // *html* The skin HTML to wrap around `elem`. If this contains a single
+    // inner-most child element, That element will be used as the wrapper.
+    // Otherwise the wrapper element can be designated using the
+    // `skin-wrapper` class.
+    //
+    // *events* A mapping of event handlers. See `apres.delegate()` for
+    // details.
+    //
+    // **context** an optional object passed to any content property functions
+    // when the skin is applied.
+
 
     //### Controller Manipulation
     // Get or set the controller for the view When setting a new controller,
