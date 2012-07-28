@@ -357,7 +357,9 @@ define('apres',
     //
     // **SkinFactory** an optional constructor function for the widget's skin,
     // or a module name for the skin constructor. Note if both `WidgetFactory`
-    // and `SkinFactory` are specified, they must be of the same type.
+    // and `SkinFactory` are specified, they must be of the same type. If 
+    // no skin is desired, but a callback is needed you should pass `null` for 
+    // this argument to prevent ambiguity.
     //
     // **params** an optional parameter object passed to the WidgetFactory.
     // if not provided, the parameters will be derived from the element's
@@ -377,7 +379,7 @@ define('apres',
         return typeof id !== 'undefined' ? widgets[id] : undefined;
       }
       // Shuffle optional arguments
-      if (typeof SkinFactory !== 'function' && typeof SkinFactory !== 'string') {
+      if (typeof SkinFactory !== 'function' && typeof SkinFactory !== 'string' && SkinFactory !== null) {
         callback = params;
         params = SkinFactory;
         SkinFactory = undefined;
