@@ -335,7 +335,7 @@ define('apres',
         wrapper = skinElem.find('.skin-wrapper');
         if (wrapper.length > 0) {
           skinElem.insertBefore(elem);
-          wrapper.outerHtml(elem);
+          wrapper.html(elem);
         } else {
           // Lacking a designated skin-wrapper element,
           // we assume the skin has a single inner element
