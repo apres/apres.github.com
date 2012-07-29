@@ -425,6 +425,65 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     });
   });
 
+  sinonTest('#widget skin', function() {
+    this.stub(apres, '$').returnsArg(0);
+    var Widget = function() {};
+    var Skin = sinon.spy();
+    var elem = new MockDomElem;
+    apres.widget(elem, Widget, Skin);
+    assert(Skin.calledWithNew(), 'Skin constructor not called');
+    assert.strictEqual(Skin.args[0][0], elem,
+      'Skin constructor not passed elem');
+    assert.instanceOf(Skin.args[0][1], Widget,
+      'Skin constructor not passed widget');
+  });
+
+  sinonTest('#widget skin one css', function() {
+    var Widget = sinon.spy();
+    var Skin = function() {
+      this.css = 'test/skin/one.css';
+    }
+    assert.equal($('link[href="test/skin/one.css"]').length, 0)
+    apres.widget(new MockDomElem, Widget, Skin);
+    assert.equal($('link[href="test/skin/one.css"]').length, 1)
+  });
+
+  sinonTest('#widget skin css inserted once', function() {
+    var Widget = sinon.spy();
+    var Skin = function() {
+      this.css = 'test/skin/once.css';
+    }
+    assert.equal($('link[href="test/skin/once.css"]').length, 0)
+    apres.widget(new MockDomElem, Widget, Skin);
+    assert.equal($('link[href="test/skin/once.css"]').length, 1)
+    apres.widget(new MockDomElem, Widget, Skin);
+    assert.equal($('link[href="test/skin/once.css"]').length, 1)
+    apres.widget(new MockDomElem, Widget, Skin);
+    assert.equal($('link[href="test/skin/once.css"]').length, 1)
+  });
+
+  sinonTest('#widget skin one css func', function() {
+    var Widget = sinon.spy();
+    var Skin = function() {
+      this.css = function() {return 'test/skin/func.css'};
+    }
+    assert.equal($('link[href="test/skin/func.css"]').length, 0)
+    apres.widget(new MockDomElem, Widget, Skin);
+    assert.equal($('link[href="test/skin/func.css"]').length, 1)
+  });
+
+  sinonTest('#widget skin multi css', function() {
+    var Widget = sinon.spy();
+    var Skin = function() {
+      this.css = ['test/skin/arr1.css', 'test/skin/arr2.css'];
+    }
+    assert.equal($('link[href="test/skin/arr1.css"]').length, 0)
+    assert.equal($('link[href="test/skin/arr2.css"]').length, 0)
+    apres.widget(new MockDomElem, Widget, Skin);
+    assert.equal($('link[href="test/skin/arr1.css"]').length, 1)
+    assert.equal($('link[href="test/skin/arr2.css"]').length, 1)
+  });
+
   suite('apres.srcPromise()');
 
   sinonTest('#success', function() {
