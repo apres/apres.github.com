@@ -484,6 +484,61 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     assert.equal($('link[href="test/skin/arr2.css"]').length, 1)
   });
 
+  sinonTest('#widget skin outer html', function() {
+    var Widget = sinon.spy();
+    var Skin = function() {
+      this.outerHtml = '<div id="outer1"></div>';
+    }
+    var elem = $('<div></div>')
+    apres.widget(elem, Widget, Skin);
+    assert.strictEqual(elem.parent().attr('id'), 'outer1')
+  });
+
+  sinonTest('#widget skin outer html func', function() {
+    var Widget = sinon.spy();
+    var Skin = function() {
+      this.outerHtml = function() {
+        return '<div id="outer-func"></div>';
+      }
+    }
+    var elem = $('<div></div>')
+    apres.widget(elem, Widget, Skin);
+    assert.strictEqual(elem.parent().attr('id'), 'outer-func')
+  });
+
+  sinonTest('#widget skin outer html wrapper', function() {
+    var Widget = sinon.spy();
+    var Skin = function() {
+      this.outerHtml = '<div id="wrapper"><h1>some header</h1><div class="skin-wrapper"></div></div>';
+    }
+    var elem = $('<div></div>')
+    apres.widget(elem, Widget, Skin);
+    assert.strictEqual(elem.parent().attr('class'), 'skin-wrapper')
+    assert.strictEqual(elem.parent().parent().attr('id'), 'wrapper')
+  });
+
+  sinonTest('#widget skin inner html', function() {
+    var Widget = sinon.spy();
+    var Skin = function() {
+      this.innerHtml = '<div id="inner1"></div>';
+    }
+    var elem = $('<div></div>')
+    apres.widget(elem, Widget, Skin);
+    assert.strictEqual(elem.find('#inner1').attr('id'), 'inner1')
+  });
+
+  sinonTest('#widget skin inner html func', function() {
+    var Widget = sinon.spy();
+    var Skin = function() {
+      this.innerHtml = function() {
+        return'<div id="inner-func"></div>';
+      }
+    }
+    var elem = $('<div></div>')
+    apres.widget(elem, Widget, Skin);
+    assert.strictEqual(elem.find('#inner-func').attr('id'), 'inner-func')
+  });
+
   suite('apres.srcPromise()');
 
   sinonTest('#success', function() {
