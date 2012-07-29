@@ -302,7 +302,6 @@ define('apres',
           params = $.extend(params,
             apres.getParamsFromElem(elem, WidgetFactory.widgetParams));
         }
-
         widget = widgets[id] = new WidgetFactory(elem, params, widgetReady);
         if (!widgetPending[id]) registerWidget();
         elem.attr(widgetIdAttrName, id);
@@ -315,11 +314,12 @@ define('apres',
     }
     // Install a skin for a widget
     var setSkin = function(elem, SkinFactory, widget) {
-      var css, html, skinElem, wrapper;
+      var css, innerHtml, outerHtml, wrapper;
+      var skinElem = elem;
       var skin = new SkinFactory(elem, widget);
       // Install skin CSS
       if (css = skin.css) {
-        if (typeof css === 'function') css = css(widget);
+        if (typeof css === 'function') css = skin.css(widget);
         if (typeof css === 'string') {
           apres.linkStyleSheet(css);
         } else {
@@ -328,14 +328,14 @@ define('apres',
           }
         }
       }
-      // Create skin markup and wrap it around element
-      if (html = skin.html) {
-        if (typeof html === 'function') html = html(widget);
-        skinElem = apres.$(html);
+      // Create outer skin markup and wrap it around element
+      if (outerHtml = skin.outerHtml) {
+        if (typeof outerHtml === 'function') outerHtml = skin.outerHtml(widget);
+        skinElem = apres.$(outerHtml);
         wrapper = skinElem.find('.skin-wrapper');
         if (wrapper.length > 0) {
           skinElem.insertBefore(elem);
-          wrapper.html(elem);
+          wrapper.outerHtml(elem);
         } else {
           // Lacking a designated skin-wrapper element,
           // we assume the skin has a single inner element
@@ -343,10 +343,18 @@ define('apres',
           elem.wrap(skinElem);
         }
       }
+      // Insert inner skin markup
+      var innerType = typeof skin.innerHtml;
+      if (innerType === 'function') {
+        elem.html(skin.innerHtml(widget));
+      } else if (innerType !== 'undefined') {
+        elem.html(skin.innerHtml);
+      }
       // Attach skin event handlers
       if (skin.events) apres.delegate(skin, skinElem);
-      return skin;
+      return skinElem;
     }
+
     //### Manipulate Widgets
     // Get or install a widget object for an element
     //
