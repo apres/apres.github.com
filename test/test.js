@@ -4,7 +4,9 @@ require(
   ['jquery', 
    './apres-test.js', 
    './template-widget-test.js',
-   './folio-test.js'], 
+   './folio-test.js',
+   './pager-test.js',
+  ], 
   function($) {
     mocha.setup({
       ui: 'qunit',
