@@ -12,6 +12,13 @@ requirejs(
       assert.isUndefined(pager.delegate());
     });
 
+    testing.test('#basic set delegate', function() {
+      var pager = new PagerWidget(testing.BasicElem());
+      var delegate = {};
+      pager.delegate(delegate);
+      assert.strictEqual(pager.delegate(), delegate);
+    });
+
     testing.test('#basic delegate', function() {
       var pager = new PagerWidget(testing.BasicElem(), {pages: 5});
       assert.instanceOf(pager.delegate(), pager.BasicPagerDelegate);
