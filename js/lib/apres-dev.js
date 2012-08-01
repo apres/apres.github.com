@@ -398,7 +398,7 @@ define('apres',
       }
       // String factory names are imported async 
       if (typeof WidgetFactory === 'string') {
-        if (typeof SkinFactory === 'string') {
+        if (typeof SkinFactory === 'string' && SkinFactory.charAt(0) !== '~') {
           modules = [WidgetFactory, SkinFactory];
         } else {
           modules = [WidgetFactory];
@@ -410,8 +410,12 @@ define('apres',
               error(msg);
               if (callback) callback(Error(msg));
             }
-            if (skinCons && typeof skinCons !== 'function') {
-              var msg = 'Apres - skin module "' + SkinFactory + '" did not return a factory function';
+            if (!skinCons && typeof SkinFactory === 'string' && SkinFactory.charAt(0) === '~') {
+              // SkinFactory with a leading ~ are loaded from WidgetFactory
+              skinCons = widgetCons.skins[SkinFactory.slice(1)];
+            } 
+            if (SkinFactory && typeof skinCons !== 'function') {
+              var msg = 'Apres - skin "' + SkinFactory + '" is not a factory function';
               error(msg);
               if (callback) callback(Error(msg));
             }
@@ -473,16 +477,11 @@ define('apres',
           elem.getElementsByClassName || (elem = elem.get(0));
           widgetElems = elem.getElementsByClassName('widget');
           for (i = 0; (widgetElem = widgetElems[i]); i++) {
-            skinFactory = widgetElem.getAttribute('data-skin');
-            if (skinFactory) {
-              callback = function(widget) {
-                apres.skin(widgetElem, skinFactory, widget);
-              }
-            } else {
-              callback = undefined;
-            }
             widgetFactory = widgetElem.getAttribute('data-widget');
-            if (widgetFactory) apres.widget(widgetElem, widgetFactory, callback);
+            if (widgetFactory) {
+              skinFactory = widgetElem.getAttribute('data-skin');
+              apres.widget(widgetElem, widgetFactory, skinFactory);
+            }
           }
         }
         scanning = false;
