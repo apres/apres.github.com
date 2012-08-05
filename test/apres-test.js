@@ -119,6 +119,33 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     assert.equal(elem.delegates[1].method(), delegate);
   });
 
+  suite('apres.linkStyleSheet()');
+
+  sinonTest('#one css', function() {
+    assert.equal($('link[href="test/style/one.css"]').length, 0)
+    apres.linkStyleSheet('test/style/one.css');
+    assert.equal($('link[href="test/style/one.css"]').length, 1)
+  });
+
+  sinonTest('#css inserted once', function() {
+    assert.equal($('link[href="test/style/once.css"]').length, 0)
+    apres.linkStyleSheet('test/style/once.css');
+    assert.equal($('link[href="test/style/once.css"]').length, 1)
+    apres.linkStyleSheet('test/style/once.css');
+    assert.equal($('link[href="test/style/once.css"]').length, 1)
+    apres.linkStyleSheet('test/style/once.css');
+    assert.equal($('link[href="test/style/once.css"]').length, 1)
+  });
+
+  sinonTest('#multi css', function() {
+    assert.equal($('link[href="test/style/arr1.css"]').length, 0)
+    assert.equal($('link[href="test/style/arr2.css"]').length, 0)
+    apres.linkStyleSheet('test/style/arr1.css');
+    apres.linkStyleSheet('test/style/arr2.css');
+    assert.equal($('link[href="test/style/arr1.css"]').length, 1)
+    assert.equal($('link[href="test/style/arr2.css"]').length, 1)
+  });
+
   suite('apres.widget()');
 
   var MockDomElem = function(attrs) {
@@ -438,105 +465,62 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
       'Skin constructor not passed widget');
   });
 
-  sinonTest('#widget skin one css', function() {
+  sinonTest('#widget skin layout', function() {
     var Widget = sinon.spy();
+    var layoutFunc = sinon.spy();
     var Skin = function() {
-      this.css = 'test/skin/one.css';
+      this.layout = layoutFunc;
     }
-    assert.equal($('link[href="test/skin/one.css"]').length, 0)
-    apres.widget(new MockDomElem, Widget, Skin);
-    assert.equal($('link[href="test/skin/one.css"]').length, 1)
+    var elem = new MockDomElem;
+    assert.equal(layoutFunc.callCount, 0);
+    apres.widget(elem, Widget, Skin);
+    assert.equal(layoutFunc.callCount, 1);
   });
 
-  sinonTest('#widget skin css inserted once', function() {
-    var Widget = sinon.spy();
-    var Skin = function() {
-      this.css = 'test/skin/once.css';
-    }
-    assert.equal($('link[href="test/skin/once.css"]').length, 0)
-    apres.widget(new MockDomElem, Widget, Skin);
-    assert.equal($('link[href="test/skin/once.css"]').length, 1)
-    apres.widget(new MockDomElem, Widget, Skin);
-    assert.equal($('link[href="test/skin/once.css"]').length, 1)
-    apres.widget(new MockDomElem, Widget, Skin);
-    assert.equal($('link[href="test/skin/once.css"]').length, 1)
-  });
-
-  sinonTest('#widget skin one css func', function() {
-    var Widget = sinon.spy();
-    var Skin = function() {
-      this.css = function() {return 'test/skin/func.css'};
-    }
-    assert.equal($('link[href="test/skin/func.css"]').length, 0)
-    apres.widget(new MockDomElem, Widget, Skin);
-    assert.equal($('link[href="test/skin/func.css"]').length, 1)
-  });
-
-  sinonTest('#widget skin multi css', function() {
-    var Widget = sinon.spy();
-    var Skin = function() {
-      this.css = ['test/skin/arr1.css', 'test/skin/arr2.css'];
-    }
-    assert.equal($('link[href="test/skin/arr1.css"]').length, 0)
-    assert.equal($('link[href="test/skin/arr2.css"]').length, 0)
-    apres.widget(new MockDomElem, Widget, Skin);
-    assert.equal($('link[href="test/skin/arr1.css"]').length, 1)
-    assert.equal($('link[href="test/skin/arr2.css"]').length, 1)
-  });
-
-  sinonTest('#widget skin outer html', function() {
-    var Widget = sinon.spy();
-    var Skin = function() {
-      this.outerHtml = '<div id="outer1"></div>';
+  sinonTest('#widget skin elem', function() {
+    var delegate = this.stub(apres, 'delegate');
+    var Widget = function() {
+      this.events = {};
     }
     var elem = $('<div></div>')
+    var skinElem = elem.wrap('<div class="skin-wrapper"></div>');
+    var Skin = function() {
+      this.elem = skinElem;
+    }
+    assert.equal(delegate.callCount, 0);
     apres.widget(elem, Widget, Skin);
-    assert.strictEqual(elem.parent().attr('id'), 'outer1')
+    assert.equal(delegate.callCount, 1);
+    assert.strictEqual(delegate.args[0][1], skinElem);
   });
 
-  sinonTest('#widget skin outer html func', function() {
+  sinonTest('#widget skin events', function() {
+    var delegate = this.stub(apres, 'delegate');
     var Widget = sinon.spy();
-    var Skin = function() {
-      this.outerHtml = function() {
-        return '<div id="outer-func"></div>';
-      }
-    }
     var elem = $('<div></div>')
+    var Skin = function() {
+      this.events = {};
+    }
+    assert.equal(delegate.callCount, 0);
     apres.widget(elem, Widget, Skin);
-    assert.strictEqual(elem.parent().attr('id'), 'outer-func')
+    assert.equal(delegate.callCount, 1);
+    assert.instanceOf(delegate.args[0][0], Skin);
+    assert.deepEqual(delegate.args[0][1].get(0), elem.get(0));
   });
 
-  sinonTest('#widget skin outer html wrapper', function() {
+  sinonTest('#widget skin events and elem', function() {
+    var delegate = this.stub(apres, 'delegate');
     var Widget = sinon.spy();
-    var Skin = function() {
-      this.outerHtml = '<div id="wrapper"><h1>some header</h1><div class="skin-wrapper"></div></div>';
-    }
     var elem = $('<div></div>')
-    apres.widget(elem, Widget, Skin);
-    assert.strictEqual(elem.parent().attr('class'), 'skin-wrapper')
-    assert.strictEqual(elem.parent().parent().attr('id'), 'wrapper')
-  });
-
-  sinonTest('#widget skin inner html', function() {
-    var Widget = sinon.spy();
+    var skinElem = elem.wrap('<div class="skin-wrapper"></div>');
     var Skin = function() {
-      this.innerHtml = '<div id="inner1"></div>';
+      this.events = {};
+      this.elem = skinElem;
     }
-    var elem = $('<div></div>')
+    assert.equal(delegate.callCount, 0);
     apres.widget(elem, Widget, Skin);
-    assert.strictEqual(elem.find('#inner1').attr('id'), 'inner1')
-  });
-
-  sinonTest('#widget skin inner html func', function() {
-    var Widget = sinon.spy();
-    var Skin = function() {
-      this.innerHtml = function() {
-        return'<div id="inner-func"></div>';
-      }
-    }
-    var elem = $('<div></div>')
-    apres.widget(elem, Widget, Skin);
-    assert.strictEqual(elem.find('#inner-func').attr('id'), 'inner-func')
+    assert.equal(delegate.callCount, 1);
+    assert.instanceOf(delegate.args[0][0], Skin);
+    assert.deepEqual(delegate.args[0][1].get(0), skinElem.get(0));
   });
 
   suite('apres.srcPromise()');

@@ -314,43 +314,10 @@ define('apres',
     }
     // Install a skin for a widget
     var setSkin = function(elem, SkinFactory, widget) {
-      var css, innerHtml, outerHtml, wrapper;
-      var skinElem = elem;
       var skin = new SkinFactory(elem, widget);
-      // Install skin CSS
-      if (css = skin.css) {
-        if (typeof css === 'function') css = skin.css(widget);
-        if (typeof css === 'string') {
-          apres.linkStyleSheet(css);
-        } else {
-          for (var i = 0; i < css.length; i++) {
-            apres.linkStyleSheet(css[i]);
-          }
-        }
-      }
-      // Create outer skin markup and wrap it around element
-      if (outerHtml = skin.outerHtml) {
-        if (typeof outerHtml === 'function') outerHtml = skin.outerHtml(widget);
-        skinElem = apres.$(outerHtml);
-        wrapper = skinElem.find('.skin-wrapper');
-        if (wrapper.length > 0) {
-          skinElem.insertBefore(elem);
-          wrapper.html(elem);
-        } else {
-          // Lacking a designated skin-wrapper element,
-          // we assume the skin has a single inner element
-          // that will work with `jQuery.wrap()`
-          elem.wrap(skinElem);
-        }
-      }
-      // Insert inner skin markup
-      var innerType = typeof skin.innerHtml;
-      if (innerType === 'function') {
-        elem.html(skin.innerHtml(widget));
-      } else if (innerType !== 'undefined') {
-        elem.html(skin.innerHtml);
-      }
+      if (skin.layout) skin.layout();
       // Attach skin event handlers
+      var skinElem = skin.elem || elem;
       if (skin.events) apres.delegate(skin, skinElem);
       return skinElem;
     }
