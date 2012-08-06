@@ -1,0 +1,23 @@
+.pager-basic-skin {
+  padding: 0.3rem;
+}
+
+.pager-basic-skin a {
+  padding: 0.2rem;
+  margin: 0.1rem;
+  text-decoration: none;
+}
+
+.pager-basic-skin a.current {
+  color: black;
+  font-weight: bold;
+}
+
+.pager-basic-skin .action-previousPage,
+.pager-basic-skin .action-nextPage {
+  position: relative;
+  top: -0.1rem;
+  font-size: 120%;
+  color: black;
+}
+
