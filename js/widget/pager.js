@@ -72,7 +72,8 @@ define(['apres', 'jquery'], function(apres, $) {
   }
   PagerWidget.prototype.events = {
     'click .action-currentPage': function(evt) {
-      var page = evt.target.getAttribute('data-page');
+      var target = evt.currentTarget || evt.target;
+      var page = target.getAttribute('data-page');
       if (page) {
         this.delegate().currentPage(Number(page));
         evt.preventDefault();
@@ -113,6 +114,8 @@ define(['apres', 'jquery'], function(apres, $) {
     }
   }
 */
+  var leftArrow = '<a class="action-previousPage arrow" href="#">◀</a>',
+      rightArrow = '<a class="action-nextPage arrow" href="#">▶</a>';
 
   skins.basic = function(elem, widget) {
     var pageLimit = 4;
@@ -121,7 +124,7 @@ define(['apres', 'jquery'], function(apres, $) {
       var abs = Math.abs,
           pages = this.pageCount = delegate.pageCount(),
           current = this.pageIndex = delegate.currentPage().index,
-          html = '<a class="action-nextPage" href="#">▶</a>';
+          html = rightArrow;
       for (var i = pages - 1; i >= 0; i--) {
         html = '<a class="action-currentPage page' + i + '" href="#" data-page="' + i + '">' + (i+1) + '</a>' + html;
         if (i > pageLimit && (i <= current - 2 || i > current + 2)) {
@@ -133,7 +136,7 @@ define(['apres', 'jquery'], function(apres, $) {
           }
         }
       }
-      html = '<a class="action-previousPage" href="#">◀</a>' + html;
+      html = leftArrow + html;
       elem.html(html);
       elem.find('.page' + current).addClass('current');
     }
@@ -153,5 +156,51 @@ define(['apres', 'jquery'], function(apres, $) {
     apres.linkStyleSheet('/css/skin/pager.css');
     elem.addClass('pager-basic-skin');
   }
+
+  skins.dots = function(elem, widget) {
+    var delegate = widget.delegate();
+    var pages = delegate.pageCount(),
+        current = delegate.currentPage().index,
+        html = '';
+    this.layout = function() {
+      for (var i = 0; i < pages; i++) {
+        html += '<a class="action-currentPage page' + i + '" data-page="' + i + '">'
+             + '<span class="dot"></span></a>';
+      }
+      elem.html(html);
+      elem.find('.page' + current).addClass('current');
+    }
+    this.update = function() {
+      var current = delegate.currentPage().index;
+      elem.find('.action-currentPage.current').removeClass('current');
+      elem.find('.action-currentPage.page' + current).addClass('current');
+    }
+    this.events = {
+      'pager-pageschanged': 'layout',
+      'pager-currentPage': 'update',
+    }
+    apres.linkStyleSheet('/css/skin/pager.css');
+    elem.addClass('pager-dots-skin');
+  }
+
+  skins.numeric = function(elem, widget) {
+    var delegate = widget.delegate();
+    this.layout = function() {
+      var pages = delegate.pageCount(),
+          current = delegate.currentPage().index + 1;
+      elem.html(leftArrow + ' Page <span class="page-no">' + current + '</span> of ' 
+        + pages + ' ' + rightArrow);
+    }
+    this.update = function() {
+      elem.find('.page-no').html(delegate.currentPage().index + 1);
+    }
+    this.events = {
+      'pager-pageschanged': 'layout',
+      'pager-currentPage': 'update',
+    }
+    apres.linkStyleSheet('/css/skin/pager.css');
+    elem.addClass('pager-numeric-skin');
+  }
+
   return PagerWidget;
 });
