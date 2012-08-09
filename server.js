@@ -2,7 +2,7 @@ var http = require('http'),
     static = require('node-static');
 
 // Disable Cache-Control header for development
-var file = new (static.Server)('./', {cache: false});
+var file = new (static.Server)('./', {cache: -1});
 
 http.createServer(function(req, res) {
   req.addListener('end', function() {
