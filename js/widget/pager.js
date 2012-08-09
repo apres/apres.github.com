@@ -117,7 +117,7 @@ define(['apres', 'jquery'], function(apres, $) {
   var leftArrow = '<a class="action-previousPage arrow" href="#">◀</a>',
       rightArrow = '<a class="action-nextPage arrow" href="#">▶</a>';
 
-  skins.basic = function(elem, widget) {
+  skins.default = function(elem, widget) {
     var pageLimit = 4;
     var delegate = widget.delegate();
     this.layout = function() {

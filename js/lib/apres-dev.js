@@ -377,9 +377,13 @@ define('apres',
               error(msg);
               if (callback) callback(Error(msg));
             }
-            if (!skinCons && typeof SkinFactory === 'string' && SkinFactory.charAt(0) === '~') {
-              // SkinFactory with a leading ~ are loaded from WidgetFactory
-              skinCons = widgetCons.skins[SkinFactory.slice(1)];
+            if (!skinCons) {
+              if (typeof SkinFactory === 'string' && SkinFactory.charAt(0) === '~') {
+                // SkinFactory with a leading ~ are loaded from WidgetFactory
+                skinCons = widgetCons.skins[SkinFactory.slice(1)];
+              } else if (!SkinFactory && widgetCons.skins) {
+                skinCons = widgetCons.skins.default;
+              }
             } 
             if (SkinFactory && typeof skinCons !== 'function') {
               var msg = 'Apres - skin "' + SkinFactory + '" is not a factory function';

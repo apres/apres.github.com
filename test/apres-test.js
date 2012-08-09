@@ -1,4 +1,4 @@
-requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
+requirejs(['apres', 'chai', 'sinon', 'apres-testing'], function(apres, chai, sinon, testing) {
   var expect = chai.expect, assert = chai.assert;
 
   // Sinon test wrapper automatically creates a sandbox
@@ -521,6 +521,25 @@ requirejs(['apres', 'chai', 'sinon'], function(apres, chai, sinon) {
     assert.equal(delegate.callCount, 1);
     assert.instanceOf(delegate.args[0][0], Skin);
     assert.deepEqual(delegate.args[0][1].get(0), skinElem.get(0));
+  });
+
+  testing.asyncTest('#widget by name', function(sandbox, done) {
+    var Widget = function() {
+      done();
+    }
+    define('#apres-test-widget-by-name', function() {return Widget});
+    apres.widget(new MockDomElem, '#apres-test-widget-by-name');
+  });
+
+  testing.asyncTest('#widget default skin', function(sandbox, done) {
+    var Widget = sinon.spy();
+    define('#apres-test-widget-default-skin', function() {return Widget});
+    Widget.skins = {
+      default: function() {
+        done();
+      }
+    }
+    apres.widget(new MockDomElem, '#apres-test-widget-default-skin');
   });
 
   suite('apres.srcPromise()');
