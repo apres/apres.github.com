@@ -194,6 +194,19 @@ define('apres',
       'selector': function(name, value) {
         return apres.$(value);
       },
+      'widget': function(name, value) {
+        var elem = apres.$(value),
+            deferred = apres.$.Deferred();
+        var resolveWidget = function() {
+          var id = elem.attr(widgetIdAttrName);
+          if (id) {
+            deferred.resolve(widgets[id]);
+            return true;
+          }
+        }
+        if (!resolveWidget(elem)) elem.one('widgetReady', resolveWidget);
+        return deferred.promise();
+      },
       // "src" types return promise objects that asynchronously provide their
       // results once the resources are loaded, or immediately if they are cached
       'scriptSrc': function(name, value) {
@@ -303,8 +316,8 @@ define('apres',
             apres.getParamsFromElem(elem, WidgetFactory.widgetParams));
         }
         widget = widgets[id] = new WidgetFactory(elem, params, widgetReady);
-        if (!widgetPending[id]) registerWidget();
         elem.attr(widgetIdAttrName, id);
+        if (!widgetPending[id]) registerWidget();
       }
       if (oldWidget) {
         apres.pubsub.publishSync(topic.replaceWidget, 
@@ -445,7 +458,7 @@ define('apres',
           elemQueue = elemQueue.filter(function(queueElem) {
             queueElem !== elem
           });
-          elem.getElementsByClassName || (elem = elem.get(0));
+          if (!elem.getElementsByClassName) elem = elem.get(0);
           widgetElems = elem.getElementsByClassName('widget');
           for (i = 0; (widgetElem = widgetElems[i]); i++) {
             widgetFactory = widgetElem.getAttribute('data-widget');

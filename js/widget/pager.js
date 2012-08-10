@@ -96,6 +96,7 @@ define(['apres', 'jquery'], function(apres, $) {
       + 'This value is ignored if a delegate widget is specified.'},
     current: {type: 'int', default: 0, descr: 'Used to specify the current page index '
       + 'when *pages* is also specified.'},
+    delegate: {type: 'widget', descr: 'Delegate widget this pager controls'},
   };
 
   //## Define built-in pager skins

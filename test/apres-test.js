@@ -421,6 +421,38 @@ requirejs(['apres', 'chai', 'sinon', 'apres-testing'], function(apres, chai, sin
     assert.equal(params.xyz.foo, 123);
   });
 
+  testing.asyncTest('#widget type param widget ready before', function(sandbox, done) {
+    var targetElem = $('<div></div>');
+    var TargetWidget = function(){};
+    apres.widget(targetElem, TargetWidget, null, function(err, target) {
+      var params = apres.convertParams(
+        {target: targetElem}, {target: {type: 'widget'}});
+      params.target.done(function(target) {
+        assert.instanceOf(target, TargetWidget);
+        done();
+      });
+    });
+  });
+
+  testing.asyncTest('#widget type param widget ready after', function(sandbox, done) {
+    sandbox.stub(apres, '$').returnsArg(0);
+    var targetElem = new MockElem;
+    targetElem.one = function(eventName, cb) {
+      targetElem.trigger = function(triggeredEventName) {
+        assert.strictEqual(triggeredEventName, eventName);
+        cb();
+      }
+    }
+    var TargetWidget = function(){};
+    var params = apres.convertParams(
+      {target: targetElem}, {target: {type: 'widget'}});
+    params.target.done(function(target) {
+      assert.instanceOf(target, TargetWidget);
+      done();
+    });
+    apres.widget(targetElem, TargetWidget);
+  });
+
   sinonTest('#widget widget param precedence', function() {
     this.stub(apres, '$').returnsArg(0);
     var ParamsWidget = function(elem, params) {
