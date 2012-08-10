@@ -116,7 +116,11 @@ define(['apres', 'jquery'], function(apres, $) {
   }
 */
   var leftArrow = '<a class="action-previousPage arrow" href="#">◀</a>',
-      rightArrow = '<a class="action-nextPage arrow" href="#">▶</a>';
+      rightArrow = '<a class="action-nextPage arrow" href="#">▶</a>',
+      skinEvents = {
+        'pager-pagesChanged': 'layout',
+        'pager-currentPage': 'update',
+      };
 
   skins.default = function(elem, widget) {
     var pageLimit = 4;
@@ -150,10 +154,7 @@ define(['apres', 'jquery'], function(apres, $) {
         elem.find('.action-currentPage.page' + current).addClass('current');
       }
     }
-    this.events = {
-      'pager-pageschanged': 'layout',
-      'pager-currentPage': 'update',
-    }
+    this.events = skinEvents;
     apres.linkStyleSheet('/css/skin/pager.css');
     elem.addClass('pager-basic-skin');
   }
@@ -176,10 +177,7 @@ define(['apres', 'jquery'], function(apres, $) {
       elem.find('.action-currentPage.current').removeClass('current');
       elem.find('.action-currentPage.page' + current).addClass('current');
     }
-    this.events = {
-      'pager-pageschanged': 'layout',
-      'pager-currentPage': 'update',
-    }
+    this.events = skinEvents;
     apres.linkStyleSheet('/css/skin/pager.css');
     elem.addClass('pager-dots-skin');
   }
@@ -195,10 +193,7 @@ define(['apres', 'jquery'], function(apres, $) {
     this.update = function() {
       elem.find('.page-no').html(delegate.currentPage().index + 1);
     }
-    this.events = {
-      'pager-pageschanged': 'layout',
-      'pager-currentPage': 'update',
-    }
+    this.events = skinEvents;
     apres.linkStyleSheet('/css/skin/pager.css');
     elem.addClass('pager-numeric-skin');
   }

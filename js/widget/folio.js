@@ -9,9 +9,22 @@
 define(['jquery'], function($) {
   //## Widget Constructor
   var FolioWidget = function(elem, params) {
-    var currentPage;
+    var currentPage,
+        titleAttrName = 'data-page-title',
+        folio = this;
     this.$el = elem;
-    var titleAttrName = 'data-page-title';
+
+    if (params && params.pager) params.pager.done(function(pager) {
+      this.pagerWidget = pager;
+      pagerWidget.delegate(self);
+    });
+
+    // Trigger an event for both the folio and pager
+    var triggerEvent = function(eventName, page) {
+      var target = page || folio;
+      if (folio.pagerWidget) folio.pagerWidget.$el.trigger('pager-' + eventName);
+      target.$el.trigger('folio-' + eventName, folio);
+    }
 
     //## Scan For Page Elements
     //
@@ -20,7 +33,6 @@ define(['jquery'], function($) {
     // existing pages. If pages are found the current page is set to the first
     // page. The current page is returned.
     this.findPages = function() {
-      var folio = this;
       folio.pages = [];
       // Only direct children of the folio widget are considered
       // This prevents strange nesting of pages
@@ -28,16 +40,18 @@ define(['jquery'], function($) {
       if (pageElems) $.each(pageElems, function(i, elem) {
         folio.pages.push({
           index: i,
-          elem: elem,
+          $el: elem,
           title: elem.attr(titleAttrName) || 'Page ' + (i + 1),
         });
       });
+      triggerEvent('pagesChanged');
       if (folio.pages.length) {
         return folio.currentPage(0);
       }
     }
 
     //## Get or Set the Current Page
+    // PagerDelegate protocol method
     //
     // If called with no argument, return the current page object, which
     // has the attributes *index*, *elem*, and *title*. Note the current
@@ -65,29 +79,25 @@ define(['jquery'], function($) {
       }
       if (page) {
         if (currentPage) {
-          currentPage.elem.removeClass('folio-current-page');
+          currentPage.$el.removeClass('folio-current-page');
         }
         currentPage = page;
-        page.elem.addClass('folio-current-page');
-        page.elem.trigger('folioCurrentPage', this);
+        page.$el.addClass('folio-current-page');
+        triggerEvent('currentPage', currentPage);
       }
       return currentPage;
     }
 
-    //## Go To Next Page
-    //
-    // Set the current page to the next page in sequence.
-    // Return the current page object.
-    this.nextPage = function() {
-      if (currentPage) return this.currentPage(currentPage.index + 1);
+    //## Return a Page Object for an Index
+    // PagerDelegate protocol method
+    this.page = function(index) {
+      return this.pages[index];
     }
 
-    //## Go To Previous Page
-    //
-    // Set the current page to the previous page in sequence.
-    // Return the current page object.
-    this.previousPage = function() {
-      if (currentPage) return this.currentPage(currentPage.index - 1);
+    //## Return the Page Count
+    // PagerDelegate protocol method
+    this.pageCount = function() {
+      return this.pages && this.pages.length || 0;
     }
 
     //## Add a Page
@@ -106,7 +116,7 @@ define(['jquery'], function($) {
     this.addPage = function(elem, title, index) {
       elem = $(elem);
       if (title == null) var title = elem.attr(titleAttrName);
-      var page = {elem: elem, title: title, index: index};
+      var page = {$el: elem, title: title, index: index};
       if (typeof index === 'undefined') {
         var length = this.pages.push(page);
         page.index = length - 1;
@@ -119,7 +129,7 @@ define(['jquery'], function($) {
         });
         this.pages = pages;
       }
-      this.$el.trigger('folioPagesChanged', this);
+      triggerEvent('pagesChanged');
       return page;
     }
 
@@ -132,7 +142,6 @@ define(['jquery'], function($) {
     // Return `true` if a page was removed.
     this.removePage = function(index) {
       var newCurrentPage,
-          folio = this,
           page = this.pages[index],
           removed = false,
           pages = [];
@@ -153,18 +162,22 @@ define(['jquery'], function($) {
       });
       if (removed) {
         this.pages = pages;
-        this.$el.trigger('folioPagesChanged', this);
+        triggerEvent('pagesChanged');
         if (newCurrentPage) this.currentPage(newCurrentPage.index);
         if (pages.length === 0) {
-          if (currentPage) currentPage.elem.removeClass('folio-current-page');
+          if (currentPage) currentPage.$el.removeClass('folio-current-page');
           currentPage = undefined;
-          page.elem.trigger('folioCurrentPage', this);
+          triggerEvent('currentPage');
         }
       }
       return removed;
     }
 
     this.findPages();
+  }
+  FolioWidget.widgetParams = {
+    'pager': {type: 'widget', 
+      descr: 'Optional reference to a pager widget to control the folio'},
   }
   return FolioWidget;
 });
