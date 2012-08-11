@@ -260,5 +260,20 @@ requirejs(
       assert(removed, 'removePage() returned false');
       assert(trigger.calledWith('folio-pagesChanged'), 'pagesChanged not fired');
     });
+
+
+    testing.asyncTest('#pager', function(sandbox, done) {
+      var elem = elemWithPages('Foo', 'Bar');
+      var pagerElem = new testing.AttrElem;
+      var pager = {
+        '$el': elem,
+        delegate: function(widget) {
+          assert.instanceOf(widget, FolioWidget);
+          assert.strictEqual(widget.pagerWidget, pager);
+          done();
+        }
+      }
+      new FolioWidget(elem, {pager: testing.Promise(pager)});
+    });
   }
 );

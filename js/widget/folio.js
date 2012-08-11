@@ -15,8 +15,8 @@ define(['jquery'], function($) {
     this.$el = elem;
 
     if (params && params.pager) params.pager.done(function(pager) {
-      this.pagerWidget = pager;
-      pagerWidget.delegate(self);
+      folio.pagerWidget = pager;
+      pager.delegate(folio);
     });
 
     // Trigger an event for both the folio and pager

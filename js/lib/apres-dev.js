@@ -195,8 +195,8 @@ define('apres',
         return apres.$(value);
       },
       'widget': function(name, value) {
-        var elem = apres.$(value),
-            deferred = apres.$.Deferred();
+        var deferred = apres.$.Deferred(),
+            elem = apres.$(value);
         var resolveWidget = function() {
           var id = elem.attr(widgetIdAttrName);
           if (id) {
