@@ -14,11 +14,6 @@ define(['jquery'], function($) {
         folio = this;
     this.$el = elem;
 
-    if (params && params.pager) params.pager.done(function(pager) {
-      folio.pagerWidget = pager;
-      pager.delegate(folio);
-    });
-
     // Trigger an event for both the folio and pager
     var triggerEvent = function(eventName, page) {
       var target = page || folio;
@@ -38,6 +33,7 @@ define(['jquery'], function($) {
       // This prevents strange nesting of pages
       var pageElems = this.$el.find('>.page');
       if (pageElems) $.each(pageElems, function(i, elem) {
+        elem = $(elem);
         folio.pages.push({
           index: i,
           $el: elem,
@@ -79,10 +75,10 @@ define(['jquery'], function($) {
       }
       if (page) {
         if (currentPage) {
-          currentPage.$el.removeClass('folio-current-page');
+          currentPage.$el.removeClass('current');
         }
         currentPage = page;
-        page.$el.addClass('folio-current-page');
+        page.$el.addClass('current');
         triggerEvent('currentPage', currentPage);
       }
       return currentPage;
@@ -174,6 +170,11 @@ define(['jquery'], function($) {
     }
 
     this.findPages();
+
+    if (params && params.pager) {
+      params.pager.delegate(folio);
+      folio.pagerWidget = params.pager;
+    }
   }
   FolioWidget.widgetParams = {
     'pager': {type: 'widget', 

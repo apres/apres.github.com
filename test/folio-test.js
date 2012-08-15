@@ -9,11 +9,13 @@ requirejs(
 
     var elemWithPages = function() {
       var title;
-      var elem = testing.BasicElem();
+      var elem = $('<div></div>');
       elem.trigger = sinon.spy();
       var pageElems = [];
       for (var i = 0; (title = arguments[i]); i++) {
-        pageElems.push(testing.AttrElem({'class': 'page', 'data-page-title': title}));
+        var page = $('<div class="page" data-page-title="' + title + '"></div>')
+        pageElems.push(page);
+        elem.append(page);
       }
       elem.find = function() {
         return pageElems;
@@ -26,10 +28,10 @@ requirejs(
       var pageElems = elem.find();
       var folio = new FolioWidget(elem);
       assert.equal(folio.pageCount(), 2);
-      assert.strictEqual(folio.pages[0].$el, pageElems[0]);
+      assert.strictEqual(folio.pages[0].$el.html(), pageElems[0].html());
       assert.strictEqual(folio.pages[0].index, 0);
       assert.strictEqual(folio.pages[0].title, 'First Page');
-      assert.strictEqual(folio.pages[1].$el, pageElems[1]);
+      assert.strictEqual(folio.pages[1].$el.html(), pageElems[1].html());
       assert.strictEqual(folio.pages[1].index, 1);
       assert.strictEqual(folio.pages[1].title, 'Second Page');
     });
@@ -39,7 +41,7 @@ requirejs(
       var pageElems = elem.find();
       var folio = new FolioWidget(elem);
       var page = folio.currentPage();
-      assert.strictEqual(page.$el, pageElems[0]);
+      assert.strictEqual(page.$el.html(), pageElems[0].html());
       assert.strictEqual(page.title, 'Page Uno');
       assert.strictEqual(page.index, 0);
     });
@@ -56,13 +58,13 @@ requirejs(
       var pageElems = elem.find();
       var folio = new FolioWidget(elem);
       var page = folio.currentPage(1);
-      assert.strictEqual(page.$el, pageElems[1]);
+      assert.strictEqual(page.$el.html(), pageElems[1].html());
       assert.strictEqual(page, folio.currentPage());
       var page = folio.currentPage(2);
-      assert.strictEqual(page.$el, pageElems[2]);
+      assert.strictEqual(page.$el.html(), pageElems[2].html());
       assert.strictEqual(page, folio.currentPage());
       var page = folio.currentPage(0);
-      assert.strictEqual(page.$el, pageElems[0]);
+      assert.strictEqual(page.$el.html(), pageElems[0].html());
       assert.strictEqual(page, folio.currentPage());
     });
 
@@ -71,59 +73,42 @@ requirejs(
       var pageElems = elem.find();
       var folio = new FolioWidget(elem);
       var page = folio.currentPage('Chico');
-      assert.strictEqual(page.$el, pageElems[2]);
+      assert.strictEqual(page.$el.html(), pageElems[2].html());
       assert.strictEqual(page, folio.currentPage());
       var page = folio.currentPage('Groucho');
-      assert.strictEqual(page.$el, pageElems[0]);
+      assert.strictEqual(page.$el.html(), pageElems[0].html());
       assert.strictEqual(page, folio.currentPage());
       var page = folio.currentPage('Zeppo');
-      assert.strictEqual(page.$el, pageElems[1]);
+      assert.strictEqual(page.$el.html(), pageElems[1].html());
       assert.strictEqual(page, folio.currentPage());
       var page = folio.currentPage('Moe');
-      assert.strictEqual(page.$el, pageElems[1]);
+      assert.strictEqual(page.$el.html(), pageElems[1].html());
       assert.strictEqual(page, folio.currentPage());
       var page = folio.currentPage('Larry');
-      assert.strictEqual(page.$el, pageElems[1]);
+      assert.strictEqual(page.$el.html(), pageElems[1].html());
       assert.strictEqual(page, folio.currentPage());
     });
 
     testing.test('#current page class', function() {
       var elem = elemWithPages('Page Uno', 'Page Dos', 'Page Tres');
-      var pageElems = elem.find();
       var folio = new FolioWidget(elem);
       var page = folio.currentPage(1);
-      assert.strictEqual(page.$el.addClass.args[0][0], 'folio-current-page');
-      assert.strictEqual(page.$el.addClass.callCount, 1);
-      assert.strictEqual(pageElems[0].removeClass.callCount, 1);
+      assert.strictEqual(page.$el.attr('class'), 'page current');
       var page = folio.currentPage(2);
-      assert.strictEqual(page.$el.addClass.args[0][0], 'folio-current-page');
-      assert.strictEqual(page.$el.addClass.callCount, 1);
-      assert.strictEqual(pageElems[1].removeClass.callCount, 1);
+      assert.strictEqual(page.$el.attr('class'), 'page current');
       var page = folio.currentPage(0);
-      assert.strictEqual(page.$el.addClass.args[1][0], 'folio-current-page');
-      assert.strictEqual(page.$el.addClass.callCount, 2);
-      assert.strictEqual(pageElems[2].removeClass.callCount, 1);
+      assert.strictEqual(page.$el.attr('class'), 'page current');
     });
 
-    testing.test('#current page event', function() {
+    testing.asyncTest('#current page event', function(sandbox, done) {
       var elem = elemWithPages('Page Uno', 'Page Dos', 'Page Tres');
       var pageElems = elem.find();
       var folio = new FolioWidget(elem);
+      elem.on('folio-currentPage', function(evt, widget) {
+        assert.strictEqual(widget, folio);
+        done();
+      });
       var page = folio.currentPage(1);
-      assert.deepEqual(page.$el.trigger.args[0], ['folio-currentPage', folio]);
-      assert.deepEqual(pageElems[0].trigger.callCount, 1);
-      assert.deepEqual(pageElems[1].trigger.callCount, 1);
-      assert.deepEqual(pageElems[2].trigger.callCount, 0);
-      var page = folio.currentPage(2);
-      assert.deepEqual(page.$el.trigger.args[0], ['folio-currentPage', folio]);
-      assert.deepEqual(pageElems[0].trigger.callCount, 1);
-      assert.deepEqual(pageElems[1].trigger.callCount, 1);
-      assert.deepEqual(pageElems[2].trigger.callCount, 1);
-      var page = folio.currentPage(0);
-      assert.deepEqual(page.$el.trigger.args[1], ['folio-currentPage', folio]);
-      assert.deepEqual(pageElems[0].trigger.callCount, 2);
-      assert.deepEqual(pageElems[1].trigger.callCount, 1);
-      assert.deepEqual(pageElems[2].trigger.callCount, 1);
     });
 
     testing.test('#add page append', function() {
@@ -269,11 +254,10 @@ requirejs(
         '$el': elem,
         delegate: function(widget) {
           assert.instanceOf(widget, FolioWidget);
-          assert.strictEqual(widget.pagerWidget, pager);
           done();
         }
       }
-      new FolioWidget(elem, {pager: testing.Promise(pager)});
+      new FolioWidget(elem, {pager: pager});
     });
   }
 );

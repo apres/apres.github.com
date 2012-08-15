@@ -46,29 +46,19 @@ define(['apres', 'jade', 'jquery'], function(apres, jade, $) {
     // Process widget parameters
 
     if (params) {
-      if (params.src && params.context) {
-        widgetReady(false);
-        $.when(params.src, params.context).done(
-          function(src, context) {
-            compile(src);
-            render(context);
-          }
-        );
-      } else if (params.src) {
-        params.src.done(compile);
-      } else {
+      src = params.src;
+      context = params.context;
+      if (!src) {
         if (params.selector) {
           var srcElem = params.selector;
         } else {
           var srcElem = elem.find('script[type="text/x-jade"]');
         }
-        if (srcElem) {
-          compile(srcElem.html());
-          if (params.context) {
-            widgetReady(false);
-            params.context.done(render);
-          }
-        }
+        if (srcElem) src = srcElem.html();
+      }
+      if (src) {
+        compile(src);
+        if (context) this.render(context);
       }
     }
   }

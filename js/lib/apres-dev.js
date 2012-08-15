@@ -15,7 +15,7 @@ requirejs.config({
     app: '../app',
     widget: '../widget',
     // Core libs
-    jquery: '//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min',
+    jquery: 'jquery', //'//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min',
     underscore: 'underscore-1.3.3',
     require: 'require-1.0.8',
     pubsub: 'pubsub-1.2.0',
@@ -237,9 +237,14 @@ define('apres',
     // paramMap = {
     //  number: {type: 'int', default: 0, descr: 'An integer param'},
     //  whyYes: {type: 'bool', descr: 'True or false, yes or no, 1 or 0'},
-    //  src: {type: 'textSrc', descr: 'Some text from a resource'},
+    //  src: {type: 'textSrc', 
+    //    descr: 'Some text from a resource, preloaded for the widget'},
+    //  data: {type: 'jsonSrc', deferred: true, 
+    //    descr: 'external JSON data returned via a deferred promise object'},
     // }
     // ```
+    // Note this function does not resolve deferred param values regardless
+    // of the `deferred` paramMap flag. This is left to the caller.
     //
     apres.convertParams = function(params, paramMap) {
       var converted = {};
@@ -282,14 +287,14 @@ define('apres',
       return params;
     }
 
-    // Internal data structures and functions
+    // Internal widget data structures and functions
     var widgetIdAttrName = 'data-apres-pvt-widget-id';
     var widgets = {};
     var widgetPending = {};
-    var setWidget = function(elem, WidgetFactory, SkinFactory, params) {
-      var oldId = elem.attr(widgetIdAttrName);
-      var oldWidget = widgets[oldId];
-      var widget = null;
+    var setWidget = function(elem, WidgetFactory, SkinFactory, params, callback) {
+      var oldId = elem.attr(widgetIdAttrName),
+          oldWidget = widgets[oldId],
+          promises = [];
       if (oldWidget) {
         apres.undelegate(oldWidget, elem);
         delete widgets[oldId];
@@ -297,33 +302,46 @@ define('apres',
       }
       if (WidgetFactory) {
         var id = guid++;
-        var registerWidget = function() {
+        var registerWidget = function(widget) {
           var eventElem = elem;
           if (SkinFactory) eventElem = setSkin(elem, SkinFactory, widget);
           widget.events && apres.delegate(widget, eventElem);
           elem.trigger('widgetReady', widget);
+          if (oldWidget) {
+            apres.pubsub.publishSync(topic.replaceWidget, 
+              {elem: elem, oldWidget: oldWidget, newWidget: widget});
+          }
         }
         var widgetReady = function(isReady) {
           if (isReady === false && typeof widgetPending[id] === 'undefined') {
             widgetPending[id] = true;
           } else if (widgetPending[id]) {
             widgetPending[id] = false;
-            registerWidget();
+            registerWidget(widgetPending[id]);
           }
         }
         if (WidgetFactory.widgetParams) {
           params = $.extend(params,
             apres.getParamsFromElem(elem, WidgetFactory.widgetParams));
+          // Resolve any deferred parameter values
+          $.each(WidgetFactory.widgetParams, function(name, info) {
+            var value = params[name];
+            if (value && value.promise && value.always && !info.deferred) {
+              promises.push(value);
+              value.always(function(resolved) {
+                params[name] = resolved;
+              });
+            }
+          });
         }
-        widget = widgets[id] = new WidgetFactory(elem, params, widgetReady);
-        elem.attr(widgetIdAttrName, id);
-        if (!widgetPending[id]) registerWidget();
+        // Create the widget once deferred params are resolved
+        $.when.apply($, promises).always(function() {
+          var widget = widgets[id] = new WidgetFactory(elem, params, widgetReady);
+          elem.attr(widgetIdAttrName, id);
+          if (!widgetPending[id]) registerWidget(widget);
+          if (callback) callback(null, widget);
+        });
       }
-      if (oldWidget) {
-        apres.pubsub.publishSync(topic.replaceWidget, 
-          {elem: elem, oldWidget: oldWidget, newWidget: widget});
-      }
-      return widget;
     }
     // Install a skin for a widget
     var setSkin = function(elem, SkinFactory, widget) {
@@ -404,19 +422,17 @@ define('apres',
               if (callback) callback(Error(msg));
             }
             try {
-              widget = setWidget(elem, widgetCons, skinCons, params);
-              if (callback) callback(null, widget);
+              setWidget(elem, widgetCons, skinCons, params, callback);
             } catch (err) {
-              if (callback) {callback(err)} else {throw err}
               error('Error installing widget ' + WidgetFactory + ': ' + err);
+              if (callback) {callback(err)} else {throw err}
             }
           },
           callback
         );
       } else {
         try {
-          widget = setWidget(elem, WidgetFactory, SkinFactory, params);
-          if (callback) callback(null, widget);
+          widget = setWidget(elem, WidgetFactory, SkinFactory, params, callback);
         } catch (err) {
           if (callback) {callback(err)} else {throw err}
           error('Error installing widget ' + WidgetFactory + ': ' + err);

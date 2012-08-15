@@ -8,20 +8,20 @@
 define(['apres'], function(apres) {
 
   var IncludeWidget = function(elem, params, widgetReady) {
-    var srcUrl;
+    var srcUrl, widget = this;
     this.$el = elem;
     this.escape = false;
 
     var include = function(text) {
-      if (this.escape) {
+      if (widget.escape) {
         text = String(text)
           .replace(/&(?!(\w+|\#\d+);)/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;');
       }
-      this.$el.html(text);
-      apres.findWidgets(this.$el);
+      widget.$el.html(text);
+      apres.findWidgets(widget.$el);
       widgetReady();
     }
 
@@ -42,10 +42,7 @@ define(['apres'], function(apres) {
 
     if (params) {
       this.escape = params.escape || false;
-      if (params.src) {
-        widgetReady(false);
-        params.src.done(include.bind(this));
-      }
+      if (params.src) include(params.src);
     }
   }
   IncludeWidget.widgetParams = {

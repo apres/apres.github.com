@@ -5,15 +5,54 @@
   <meta http-equiv="X-UA-Compatible" content="chrome=1">
   <title>Pager Widget Demo</title>
   <script data-main="../js/lib/apres-dev.js" src="../js/lib/require-1.0.8.js"></script>
+  <style>
+    body {
+      margin: 1em;
+    }
+    .folio-container {
+      width: 500px;
+      text-align: center;
+    }
+    .folio-demo {
+      background-color: #bbb;
+      border: 3px solid #888;
+      font-size: 72px;
+      font-weight: bold;
+      padding: 1em;
+      color: white;
+    }
+    .folio-demo .page {
+      visibility: hidden;
+      display: none;
+    }
+    .folio-demo .page.current {
+      visibility: visible;
+      display: block;
+    }
+  </style>
 </head>
 <body>
   <h3>Default</h3>
   <div class="widget" data-widget="widget/pager" data-widget-pages="5"></div>
   <div class="widget" data-widget="widget/pager" data-widget-pages="99"></div>
+
   <h3>Dots</h3>
   <div class="widget" data-widget="widget/pager" data-skin="~dots" data-widget-pages="5"></div>
+
   <h3>Numeric</h3>
   <div class="widget" data-widget="widget/pager" data-skin="~numeric" data-widget-pages="15"></div>
+
+  <h3>Pager Controlling Folio</h3>
+  <div class="folio-container">
+    <div class="widget folio-demo" data-widget="widget/folio" data-widget-pager=".folio-demo-pager">
+      <div class="page">Page<br>One</div>
+      <div class="page">Page<br>Two</div>
+      <div class="page">Page<br>Three</div>
+      <div class="page">Page<br>Four</div>
+    </div>
+    <div class="widget folio-demo-pager" data-widget="widget/pager" data-skin="~dots"></div>
+  </div>
+
   <noscript>
     <h1>Javascript Required</h1>
     <p>Sorry, this page requires a javascript-enabled browser.</p>

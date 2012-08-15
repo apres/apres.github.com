@@ -67,7 +67,7 @@ define(['apres', 'jquery'], function(apres, $) {
       return this._delegate;
     } else {
       this._delegate = delegate;
-      this.$el.trigger('pagerDelegate', this);
+      this.$el.trigger('pager-pagesChanged', this);
     }
   }
   PagerWidget.prototype.events = {
@@ -95,26 +95,12 @@ define(['apres', 'jquery'], function(apres, $) {
     pages: {type: 'int', descr: 'If used standalone, specifies the number of pages. ' 
       + 'This value is ignored if a delegate widget is specified.'},
     current: {type: 'int', default: 0, descr: 'Used to specify the current page index '
-      + 'when *pages* is also specified.'},
-    delegate: {type: 'widget', descr: 'Delegate widget this pager controls'},
+      + 'when *pages* is also specified.'}
   };
 
   //## Define built-in pager skins
   var skins = PagerWidget.skins = {};
 
-/*
-  skins.basic = function() {
-    this.innerHtml = function(widget) {
-      return brackets(
-        ['a class="previousPage"', '◀'],
-        brackets.repeat(widget.delegate().pageCount(), function(i) {
-          return ['a class="currentPage"', {'data-page': i}, i + 1]
-        }),
-        ['a class="nextPage"', '▶']
-      );
-    }
-  }
-*/
   var leftArrow = '<a class="action-previousPage arrow" href="#">◀</a>',
       rightArrow = '<a class="action-nextPage arrow" href="#">▶</a>',
       skinEvents = {
@@ -124,34 +110,38 @@ define(['apres', 'jquery'], function(apres, $) {
 
   skins.default = function(elem, widget) {
     var pageLimit = 4;
-    var delegate = widget.delegate();
     this.layout = function() {
-      var abs = Math.abs,
-          pages = this.pageCount = delegate.pageCount(),
-          current = this.pageIndex = delegate.currentPage().index,
+      var delegate = widget.delegate(),
+          pages = delegate && delegate.pageCount(),
+          current = delegate && delegate.currentPage().index,
           html = rightArrow;
-      for (var i = pages - 1; i >= 0; i--) {
-        html = '<a class="action-currentPage page' + i + '" href="#" data-page="' + i + '">' + (i+1) + '</a>' + html;
-        if (i > pageLimit && (i <= current - 2 || i > current + 2)) {
-          html = '<span class="action-currentPage">&hellip;</span>' + html;
-          if (i > current) {
-            i = Math.max(pageLimit + 1, current + 3);
-          } else {
-            i = 1;
+      if (delegate) {
+        for (var i = pages - 1; i >= 0; i--) {
+          html = '<a class="action-currentPage page' + i + '" href="#" data-page="' + i + '">' + (i+1) + '</a>' + html;
+          if (i > pageLimit && (i <= current - 2 || i > current + 2)) {
+            html = '<span class="action-currentPage">&hellip;</span>' + html;
+            if (i > current) {
+              i = Math.max(pageLimit + 1, current + 3);
+            } else {
+              i = 1;
+            }
           }
         }
+        html = leftArrow + html;
+        elem.html(html);
+        elem.find('.page' + current).addClass('current');
       }
-      html = leftArrow + html;
-      elem.html(html);
-      elem.find('.page' + current).addClass('current');
     }
     this.update = function() {
-      if (delegate.pageCount() > pageLimit) {
-        this.layout();
-      } else {
-        var current = delegate.currentPage().index;
-        elem.find('.action-currentPage.current').removeClass('current');
-        elem.find('.action-currentPage.page' + current).addClass('current');
+      var delegate = widget.delegate();
+      if (delegate) {
+        if (delegate.pageCount() > pageLimit) {
+          this.layout();
+        } else {
+          var current = delegate.currentPage().index;
+          elem.find('.action-currentPage.current').removeClass('current');
+          elem.find('.action-currentPage.page' + current).addClass('current');
+        }
       }
     }
     this.events = skinEvents;
@@ -160,22 +150,27 @@ define(['apres', 'jquery'], function(apres, $) {
   }
 
   skins.dots = function(elem, widget) {
-    var delegate = widget.delegate();
-    var pages = delegate.pageCount(),
-        current = delegate.currentPage().index,
-        html = '';
     this.layout = function() {
-      for (var i = 0; i < pages; i++) {
-        html += '<a class="action-currentPage page' + i + '" data-page="' + i + '">'
-             + '<span class="dot"></span></a>';
+      var delegate = widget.delegate(),
+          pages = delegate && delegate.pageCount(),
+          current = delegate && delegate.currentPage().index,
+          html = '';
+      if (delegate) {
+        for (var i = 0; i < pages; i++) {
+          html += '<a class="action-currentPage page' + i + '" data-page="' + i + '">'
+               + '<span class="dot"></span></a>';
+        }
+        elem.html(html);
+        elem.find('.page' + current).addClass('current');
       }
-      elem.html(html);
-      elem.find('.page' + current).addClass('current');
     }
     this.update = function() {
-      var current = delegate.currentPage().index;
-      elem.find('.action-currentPage.current').removeClass('current');
-      elem.find('.action-currentPage.page' + current).addClass('current');
+      var delegate = widget.delegate();
+      if (delegate) {
+        var current = delegate.currentPage().index;
+        elem.find('.action-currentPage.current').removeClass('current');
+        elem.find('.action-currentPage.page' + current).addClass('current');
+      }
     }
     this.events = skinEvents;
     apres.linkStyleSheet('/css/skin/pager.css');
@@ -185,13 +180,17 @@ define(['apres', 'jquery'], function(apres, $) {
   skins.numeric = function(elem, widget) {
     var delegate = widget.delegate();
     this.layout = function() {
-      var pages = delegate.pageCount(),
-          current = delegate.currentPage().index + 1;
-      elem.html(leftArrow + ' Page <span class="page-no">' + current + '</span> of ' 
-        + pages + ' ' + rightArrow);
+      var delegate = widget.delegate(),
+          pages = delegate && delegate.pageCount(),
+          current = delegate && delegate.currentPage().index;
+      if (delegate) {
+        elem.html(leftArrow + ' Page <span class="page-no">' + current + '</span> of ' 
+          + pages + ' ' + rightArrow);
+      }
     }
     this.update = function() {
-      elem.find('.page-no').html(delegate.currentPage().index + 1);
+      var delegate = widget.delegate();
+      if (delegate) elem.find('.page-no').html(delegate.currentPage().index + 1);
     }
     this.events = skinEvents;
     apres.linkStyleSheet('/css/skin/pager.css');
