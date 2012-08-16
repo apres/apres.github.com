@@ -46,8 +46,8 @@ define(['apres', 'jade', 'jquery'], function(apres, jade, $) {
     // Process widget parameters
 
     if (params) {
-      src = params.src;
-      context = params.context;
+      var src = params.src,
+          context = params.context;
       if (!src) {
         if (params.selector) {
           var srcElem = params.selector;

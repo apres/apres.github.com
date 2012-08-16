@@ -8,14 +8,13 @@ requirejs(
   suite('include widget');
   testing.testWidgetModule('widget/include');
   testing.testWidgetElem('widget/include');
-  testing.testWidgetReadyCallback('widget/include', {src: testing.Promise('huzzah')});
 
   testing.moduleTest('#render src', 'widget/include', 
     function(sandbox, IncludeWidget) {
       var findWidgets = sandbox.stub(apres, 'findWidgets');
       var elem = testing.BasicElem();
       var data = "Include This!";
-      var include = new IncludeWidget(elem, {src: testing.Promise(data)}, spy);
+      var include = new IncludeWidget(elem, {src: data}, spy);
       assert(elem.html.withArgs(data).calledOnce, 'elem.html() not called');
       assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
     }
@@ -27,7 +26,7 @@ requirejs(
       var elem = testing.BasicElem();
       var data = '<tag foo="wow"> & &entity;';
       var expected = '&lt;tag foo=&quot;wow&quot;&gt; &amp; &entity;';
-      var include = new IncludeWidget(elem, {src: testing.Promise(data), escape: true}, spy);
+      var include = new IncludeWidget(elem, {src: data, escape: true}, spy);
       assert(elem.html.withArgs(expected).calledOnce, elem.html.args[0][0]);
       assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
     }
@@ -56,8 +55,6 @@ requirejs(
   suite('handlebars widget');  
   testing.testWidgetModule('widget/handlebars');
   testing.testWidgetElem('widget/handlebars');
-  testing.testWidgetReadyCallback('widget/handlebars', 
-    {src: testing.Promise('{{word}}'), context: {word: 'huzzah'}});
 
   testing.moduleTest('#render src', 'widget/handlebars',
     function(sandbox, HandlebarsWidget) {
@@ -65,7 +62,7 @@ requirejs(
       var findWidgets = sandbox.stub(apres, 'findWidgets');
       var elem = testing.BasicElem();
       var data = "My Name is: {{name}}";
-      var handlebars = new HandlebarsWidget(elem, {src: testing.Promise(data)}, ready);
+      var handlebars = new HandlebarsWidget(elem, {src: data}, ready);
       assert(!ready.withArgs(false).calledOnce, 'widgetReady(false) called');
       assert(!elem.html.called, 'elem.html() called');
       assert(!findWidgets.called, 'findWidgets() called');
@@ -82,7 +79,7 @@ requirejs(
       var elem = testing.BasicElem();
       var data = "My Name is: {{name}}";
       var handlebars = new HandlebarsWidget( 
-        elem, {src: testing.Promise(data), context: testing.Promise({name: 'Mudd'})}, spy);
+        elem, {src: data, context: {name: 'Mudd'}}, spy);
       assert(elem.html.withArgs('My Name is: Mudd').calledOnce, 'elem.html() not called');
       assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
     }
@@ -112,8 +109,6 @@ requirejs(
   suite('jade widget');  
   testing.testWidgetModule('widget/jade');
   testing.testWidgetElem('widget/jade');
-  testing.testWidgetReadyCallback('widget/jade', 
-    {src: testing.Promise('#{word}'), context: {word: 'blotto'}});
 
   testing.moduleTest('#render src', 'widget/jade',
     function(sandbox, JadeWidget) {
@@ -121,7 +116,7 @@ requirejs(
       var findWidgets = sandbox.stub(apres, 'findWidgets');
       var elem = testing.BasicElem();
       var data = "p Goodbye #{name}";
-      var jade = new JadeWidget(elem, {src: testing.Promise(data)}, ready);
+      var jade = new JadeWidget(elem, {src: data}, ready);
       assert(!elem.html.called, 'elem.html() called');
       assert(!findWidgets.called, 'findWidgets() called');
 
@@ -137,7 +132,7 @@ requirejs(
       var elem = testing.BasicElem();
       var data = "p Goodbye #{name}";
       var jade = new JadeWidget( 
-        elem, {src: testing.Promise(data), context: testing.Promise({name: 'Mudd'})}, spy);
+        elem, {src: data, context: {name: 'Mudd'}}, spy);
       assert(elem.html.withArgs('<p>Goodbye Mudd</p>').calledOnce, 'elem.html() not called');
       assert(findWidgets.withArgs(elem).calledOnce, 'findWidgets() not called');
     }

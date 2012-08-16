@@ -47,8 +47,8 @@ define(['apres', 'handlebars', 'jquery'], function(apres, handlebars, $) {
     // Process widget parameters
 
     if (params) {
-      src = params.src;
-      context = params.context;
+      var src = params.src,
+          context = params.context;
       if (!src) {
         if (params.selector) {
           var srcElem = params.selector;
