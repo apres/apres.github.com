@@ -11,8 +11,8 @@
 requirejs.config({
   enforceDefine: true, // Puts IE on its best behavior
   paths: {
-    // Default paths to find core app and core widget modules
-    app: '../app',
+    // Default paths to find demo and core widget modules
+    demo: '../demo',
     widget: '../widget',
     // Core libs
     jquery: 'jquery', //'//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min',
