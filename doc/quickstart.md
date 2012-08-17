@@ -150,3 +150,19 @@ a widget only affects the DOM element it is attached to. In this case
 a template is rendered into the widget's elements after scanning the page
 and finding the controller and widgets.
 
+## Other Examples ##
+
+Now that you have a basic understanding of what makes Apres tick, here are
+some other examples you can look at to learn more about its capabilities:
+
+- [Markdown Example](http://apres.github.com/demo/markdown.html)
+
+- [Include Example](http://apres.github.com/demo/include.html)
+
+- [Handlebars Templating](http://apres.github.com/demo/handlebars.html)
+
+- [Jade Templating](http://apres.github.com/demo/jade.html)
+
+- [Pager Widget](http://apres.github.com/demo/pager.html)
+
+
