@@ -13,8 +13,13 @@ requirejs(['apres', 'chai', 'sinon', 'apres-testing'], function(apres, chai, sin
   }
 
   suite('apres module');
-  test('#version', function() {
+  test('#VERSION', function() {
     assert.equal(apres.VERSION, 'dev');
+  });
+
+  test('#MODULE_URI', function() {
+    assert.strictEqual(typeof apres.MODULE_URI, 'string');
+    assert(apres.MODULE_URI, 'MODULE_URI was empty');
   });
 
   suite('apres.delegate()');

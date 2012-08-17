@@ -52,6 +52,7 @@ define('apres',
   function(require, module, querystring, $, pubsub) {
     var apres  = {};
     apres.VERSION = 'dev';
+    apres.MODULE_URI = module.uri;
 
     // Unit test dependency injection points
     apres.$ = $;
