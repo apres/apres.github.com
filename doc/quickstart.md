@@ -18,7 +18,7 @@ Note you may also need to use `sudo`.
 
 ### Other Systems ###
 
-You can download node.js and npm from: http://nodejs.org/download/
+You can download node.js and npm from: <http://nodejs.org/download/>
 
 ## Creating An App ##
 
@@ -65,7 +65,7 @@ $ npm start apres
 
 This will run a local web server on port 8080 that will serve the contents
 of your application directory, and the apres modules. To confirm it is working
-navigate to http://localhost:8080/apres/ in your browser (Note you must
+navigate to <http://localhost:8080/apres/> in your browser (Note you must
 include the trailing slash in the URL).
 
 ### Choosing a Browser ###
@@ -95,7 +95,7 @@ things: A `<script>` tag to load Apres, and a `data-apres-controller`
 attribute on the `<html>` element. This attribute declares the Javascript module
 that is loaded as the controller for the page. In this case we load
 the `demo/hello` controller that comes with Apres. Before we go any further
-take a look at what it does by browsing to http://localhost:8080
+take a look at what it does by browsing to <http://localhost:8080>
 
 If all goes well, in the browser you should see:
 
