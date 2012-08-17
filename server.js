@@ -1,13 +1,18 @@
-var http = require('http'),
-    static = require('node-static');
+// Run a static server on localhost:8080 from the current directory, 
+// serving Apres files under /apres
 
-// Disable Cache-Control header for development
-var file = new (static.Server)('./', {cache: -1});
+var express = require('express');
+var apres = require('./index.js');
 
-http.createServer(function(req, res) {
-  req.addListener('end', function() {
-    file.serve(req, res);
-  });
-}).listen(5000);
-
-console.log("Apres now being server at http://localhost:5000");
+var port = 8080,
+    app = express.createServer(),
+    wd = process.cwd();
+if (wd.lastIndexOf('/node_modules/') > 0) {
+  // Serve from the directory above node_modules
+  wd = wd.slice(0, wd.lastIndexOf('/node_modules/'));
+}
+apres.helpExpress(app);
+app.use(express.static(wd));
+app.listen(port, "127.0.0.1");
+console.log('Serving ' + wd + ' at http://localhost:' + port + '/');
+console.log('Apres files can be found at http://localhost:' + port + '/apres/');

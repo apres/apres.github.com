@@ -15,7 +15,6 @@
     "RAD", "MVC", "browser"
   ]
   , "dependencies": {
-    "node-static": "0.5.x",
     "express": "2.5.x",
     "request": "2.9.x"
   }

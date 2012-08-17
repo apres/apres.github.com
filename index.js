@@ -19,7 +19,7 @@
 var express = require('express')
   , path = require('path');
 
-var helpExpress = exports.helpExpress = function (app) {
+exports.helpExpress = function(app) {
   var basePath = __dirname;
   // If not installed as an NPM module, ie test mode
   // This is kind of a hack for apres not being a dependency of itself at the moment.
@@ -36,19 +36,5 @@ var helpExpress = exports.helpExpress = function (app) {
       staticServer(req, res, next);
     });
   }
-}
-
-/*
- * Allow index.js to be run as a script to serve apres along
- * with static files in the current directory.
- */
-if (require.main === module) {
-  var port = 8080,
-      app = express.createServer();
-  helpExpress(app);
-  app.use(express.static(process.cwd()));
-  app.listen(port, "127.0.0.1");
-  console.log(process.cwd() + ' => http://localhost:' + port + '/');
-  console.log('Apres files can be found at http://localhost:' + port + '/apres/');
 }
 
