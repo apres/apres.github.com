@@ -136,7 +136,7 @@ controllers always load first, and are attached to the outermost element of
 the document.  Widgets can load in any order, and can be attached to any
 arbitrary element.
 
-If you click on the *view controller source* link, you can see how the
+If you click on the [*view controller source*][1] link, you can see how the
 `demo/hello` controller works. The most interesting thing in the *hello*
 controller module is the `controller.ready()` function. This function will be
 called automatically once the DOM is ready. Since the controller runs before
@@ -144,11 +144,15 @@ any widgets are loaded, it can manipulate the DOM anyway it likes, and even
 create widgets dynamically if desired. This controller simply adds some
 content to the view.
 
-The *widget/sourcelinks* source link demonstrates a simple widget. Like
+[1]: http://apres.github.com/demo/viewsource.html?url=demo/hello.js
+
+The [*widget/sourcelinks*][2] source link demonstrates a simple widget. Like
 a controller, it can manipulate the DOM when it loads. However, typically
 a widget only affects the DOM element it is attached to. In this case
 a template is rendered into the widget's elements after scanning the page
 and finding the controller and widgets.
+
+[2]: http://apres.github.com/demo/viewsource.html?url=demo/sourcelinks.js
 
 ## Other Examples ##
 
