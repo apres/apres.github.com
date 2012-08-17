@@ -78,7 +78,7 @@ define(
             language = inferredLang = {
               '.js': 'javascript',
               '.css': 'css',
-              '.html': 'html',
+              '.html': 'xml',
               '.xml': 'xml',
               '.md': 'markdown', '.markdown': 'markdown',
               '.json': 'json',
