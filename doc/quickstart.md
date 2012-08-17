@@ -82,7 +82,7 @@ containing this markup:
 ``` html
 <html data-apres-controller="demo/hello">
 <head>
-  <title</title>
+  <title></title>
   <script data-main="apres/js/lib/apres-dev.js" src="apres/js/lib/require-1.0.8.js"></script>
 </head>
 <body>
