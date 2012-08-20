@@ -29,6 +29,7 @@ requirejs.config({
     chai: 'chai-1.0.4',
     sinon: 'sinon-1.3.4',
     bootstrap: 'bootstrap-2.0.4',
+    model: 'js-model-0.11.0',
     // Requirejs plugins
     text: 'require-plugins/text-1.0.8',
     cs: 'require-plugins/cs-0.4.0',
