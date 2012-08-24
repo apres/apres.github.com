@@ -17,7 +17,7 @@ components. Central to that are [AMD][1] Javascript modules provided by
   combining and minifying them into a few files.
 
 - Modules can be used for other resources such as template sources, 
-  static content, and JSON data. They can be loaded as dependancies just
+  static content, and JSON data. They can be loaded as dependencies just
   like Javascript code modules.
 
 Of course, with any tool there are some considerations that are important
