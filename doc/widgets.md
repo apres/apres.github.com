@@ -130,9 +130,9 @@ define(function() {
 });
 ```
 
-The `define()` function is provided to use by requirejs to define modules.
-All widgets are defined in modules so that's why we need it here. Our widget
-has no dependencies on other modules yet, so we can simply pass `define()` a
+The `define()` function is provided by requirejs to define modules.  All
+widgets are defined in modules so that's why we need it here. Our widget has
+no dependencies on other modules yet, so we can simply pass `define()` a
 callback function where the module contents reside. The callback function will
 be called when the module is loaded, what it returns is the module object.
 That part comes next:
