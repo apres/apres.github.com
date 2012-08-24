@@ -153,6 +153,8 @@ Our simple widget doesn't do too much, it just sets the content of the widget
 element and it's done. It doesn't do anything at all with the widget instance,
 so a plain empty object is returned to Apres.
 
+### Interactive Custom Widget
+
 Next let's do something more interactive. Let's create a `question` widget
 that allows you to easily write a question with a list of multiple choice
 answers. The widget will turn the answers into radio buttons, and keep
