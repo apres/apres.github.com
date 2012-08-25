@@ -153,6 +153,8 @@ Our simple widget doesn't do too much, it just sets the content of the widget
 element and it's done. It doesn't do anything at all with the widget instance,
 so a plain empty object is returned to Apres.
 
+### Interactive Custom Widget
+
 Next let's do something more interactive. Let's create a `question` widget
 that allows you to easily write a question with a list of multiple choice
 answers. The widget will turn the answers into radio buttons, and keep
@@ -161,7 +163,7 @@ for a question:
 
 ``` html
 <p>How many conies in a brace?</p>
-<div class="widget" data-widget="/widgets/questions.js">
+<div class="widget" data-widget="/widgets/question.js">
   Zero
   Two
   Seven
@@ -192,8 +194,21 @@ define(function() {
 
 The result is something like this:
 
-<div style="padding: 10px; border: 1px solid gray; display: inline-block">
-<p>How many conies in a brace?</p>
-<label><input type="radio" name="q1" value="1"> Zero</label><br><label><input type="radio" name="q1" value="2"> Two</label><br><label><input type="radio" name="q1" value="3"> Seven</label><br><label><input type="radio" name="q1" value="4"> Seventy-Two</label><br></div>
+[[Screenshot goes here]]
+
+### Wiring Up Events
 
 Although now we can click on the buttons they don't actually do anything yet.
+We need to add some simple logic to record the answer selection. To that end,
+Apres provides a mechanism for widgets to declaratively bind DOM events to
+functions:
+
+``` javascript
+    this.events = {
+      'change input[type="radio"]': function(evt) {
+          this.answer = evt.target.value;
+      }
+    }
+```
+
+Widgets define their event bindings via an `events` property 
