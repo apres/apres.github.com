@@ -211,4 +211,10 @@ functions:
     }
 ```
 
-Widgets define their event bindings via an `events` property 
+Widgets define their event bindings via an `events` property. Each member
+in `events` defines an event binding for elements inside the widget. The
+member key for each binding is a two-part string. The first part is
+the DOM event name to bind to. The optional second part is a css selector
+string that selects the element, or elements to listen to. The event binding
+is limited to the widget element and its children.
+specified using a css selector. 
