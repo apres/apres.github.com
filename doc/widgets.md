@@ -131,11 +131,10 @@ define(function() {
 ```
 
 The `define()` function is provided by requirejs to define modules.  All
-widgets are defined in modules so that's why we need it here. Our widget has
-no dependencies on other modules yet, so we can simply pass `define()` a
-callback function where the module contents reside. The callback function will
-be called when the module is loaded, what it returns is the module object.
-That part comes next:
+widgets are defined in modules in this way. Our widget has no dependencies on
+other modules yet, so we can simply pass `define()` a callback function where
+the module contents reside. The callback function will be called when the
+module is loaded, what it returns is the module object.  That part comes next:
 
 ``` javascript
   return function(elem) {
@@ -146,12 +145,12 @@ That part comes next:
 Our widget module returns a function, a constructor function to be precise.
 When Apres loads a widget module, it expects it to return the constructor
 function to use to create the widget instance. When Apres creates a widget for
-an element, the constructor is called and the element is passed in as a jQuery
-wrapper for convenience.
+an element, the constructor is called with `new` and the element is passed in
+as a jQuery wrapper for convenience.
 
 Our simple widget doesn't do too much, it just sets the content of the widget
-element and it's done. It doesn't do anything at all with the widget instance,
-so a plain empty object is returned to Apres.
+element and it's done. It doesn't do anything at all with the widget instance
+(i.e. `this`), so a plain empty object is returned to Apres.
 
 ### Interactive Custom Widget
 
@@ -171,8 +170,8 @@ for a question:
 </div>
 ```
 
-So what we need to do it read the source text of the element, and create some
-radio buttons. Here's an initial attempt in a widget:
+To make this work, we need to read the source text of the element, and create
+some radio buttons. Here's an initial attempt for this widget:
 
 ``` javascript
 define(function() {
@@ -192,29 +191,174 @@ define(function() {
 });
 ```
 
-The result is something like this:
+The result looks like this:
 
-[[Screenshot goes here]]
+![](img/question1.png)
 
 ### Wiring Up Events
 
 Although now we can click on the buttons they don't actually do anything yet.
-We need to add some simple logic to record the answer selection. To that end,
-Apres provides a mechanism for widgets to declaratively bind DOM events to
-functions:
+We need to add some simple logic to record the answer selection. To facilitate
+that, Apres provides a mechanism for widgets to declaratively bind DOM events
+to functions:
 
 ``` javascript
     this.events = {
       'change input[type="radio"]': function(evt) {
           this.answer = evt.target.value;
+          console.log(this.answer);
       }
     }
 ```
 
-Widgets define their event bindings via an `events` property. Each member
-in `events` defines an event binding for elements inside the widget. The
-member key for each binding is a two-part string. The first part is
-the DOM event name to bind to. The optional second part is a css selector
-string that selects the element, or elements to listen to. The event binding
-is limited to the widget element and its children.
-specified using a css selector. 
+Widgets define their event bindings via an `events` property. Each member in
+`events` defines an event binding for elements inside the widget. The key for
+each binding is a two-part string. The first part is the DOM event name to
+bind to. The optional second part is a css selector for the
+element, or elements to listen to. The event name, and element selector are
+separated by a space.
+
+Widget event bindings are automatically limited to the widget element and
+its children. That way you can have several widgets on the page listening
+for the same events that do not interfere with each other.
+
+The value for each event binding is either a function, or the name of a 
+member function of the widget. When the event is triggered, this function is
+called with the `event` object as it's first argument, and any other payload
+in the remaining arguments. `this` is bound to the widget instance when the
+method is invoked, for convenience.
+
+In our example, we are bind the `change` DOM event of the radio buttons inside
+the widget to a function. This function sets an `answer` property on the widget
+to record the answer that was selected. It also logs the answer value to the 
+console, so we can see it working. Below is the complete code of the question.js
+widget with the event handling added in. Give it a try with the Javascript
+console visible to see that it works.
+
+``` javascript
+define(function() {
+  var qid = 0;
+  var QuestionWidget = function(elem) {
+
+    this.events = {
+      'change input[type="radio"]': function(evt) {
+          this.answer = parseInt(evt.target.value);
+          console.log(this.answer);
+      }
+    }
+
+    var questions = elem.html().split(/\n\s*/);
+    var html = '';
+    qid += 1;
+    for (var i = 1; i < questions.length; i++) {
+      if (questions[i]) {
+        html += '<label><input type="radio" name="q' + qid + '" value="' + i + '"/> '
+             + questions[i] + '</label><br>';
+      }
+    }
+    elem.html(html);
+  }
+  return QuestionWidget;
+});
+```
+
+![](img/question2.png)
+
+### Widget Parameters
+
+Now we record the answer in the widget, but there is no way to know if the answer
+is correct or not. We need to provide a way to specify the correct answer for
+each question widget. We can define a widget parameter for this purpose.
+
+``` javascript
+    QuestionWidget.widgetParams = {
+      answer: {
+        type: 'int',
+        descr: 'The line number of the correct answer'
+      }
+    }
+```
+
+A widget can define parameters by adding a `widgetParams` property to its
+constructor function. Apres will look for `widgetParams` when the widget is
+loaded, and get the values of any cooresponding widget parameter attributes.
+In this case, Apres will look for a `data-widget-answer` attribute on the
+widget element.
+
+Since the values of html attributes can only be strings, Apres provides a
+mechanism to convert attribute values to other data types. The `answer`
+parameter is declared with the type `int` above. As you might expect, Apres
+will convert the attribute value to an integer. The converted parameter values
+are passed to the widget constructor as an object in the second argument when
+the widget is created. Note that if no parameters are specified, this argument
+will be undefined, so we need to check that there are parameters at all before
+checking for particular params. Let's revise the widget to accept the `answer`
+parameter and store it in the widget instance:
+
+``` javacript
+define(function() {
+  var qid = 0;
+  var QuestionWidget = function(elem, params) {
+
+    if (params && params.answer) {
+      this.correctAnswer = params.answer;
+    }
+
+    ...
+```
+
+Next we'll define a member function in the widget to test the answer. It
+will display a colored border to indicate if the answer is correct, or
+incorrect. And it will disable the answer radio buttons so that the
+user cannot change their answer after the fact.
+
+``` javascript
+    this.handleAnswer = function(evt) {
+      var answer = parseInt(evt.target.value);
+      if (answer === this.correctAnswer) {
+        elem.css('border', '5px solid green');
+      } else {
+        elem.css('border', '5px solid red');
+      }
+      elem.find('input[type="radio"]').attr('disabled', 'disabled');
+    }
+```
+
+Now we need to change the event bindings to use the new `checkAnswer()`
+function:
+
+``` javascript
+    this.events = {
+      'change input[type="radio"]': 'handleAnswer'
+    }
+```
+
+Using the function name as the binding value tells Apres to dispatch to that
+member function. Using names instead of declaring the function directly in the
+`events` object can help clarify the code, allow you to use a single function
+for multiple events, and can make the widget easier to unit test.
+
+The remainder of the widget code remains the same:
+
+``` javascript
+    var questions = elem.html().split(/\n\s*/);
+    var html = '';
+    qid += 1;
+    for (var i = 1; i < questions.length; i++) {
+      if (questions[i]) {
+        html += '<label><input type="radio" name="q' + qid + '" value="' + i + '"/> '
+             + questions[i] + '</label><br>';
+      }
+    }
+    elem.html(html);
+  }
+  QuestionWidget.widgetParams = {
+    answer: {
+      type: 'int',
+      descr: 'The line number of the correct answer'
+    }
+  }
+  return QuestionWidget;
+});
+```
+
