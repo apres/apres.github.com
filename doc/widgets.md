@@ -211,12 +211,12 @@ to functions:
     }
 ```
 
-Widgets define their event bindings via an `events` property. Each member in
-`events` defines an event binding for elements inside the widget. The key for
-each binding is a two-part string. The first part is the DOM event name to
-bind to. The optional second part is a css selector for the
-element, or elements to listen to. The event name, and element selector are
-separated by a space.
+Apres' event binding mechanism is inspired by Backbone.js. Widgets define
+their event bindings via an `events` property. Each member in `events` defines
+an event binding for elements inside the widget. The key for each binding is a
+two-part string. The first part is the DOM event name to bind to. The optional
+second part is a css selector for the element, or elements to listen to. The
+
 
 Widget event bindings are automatically limited to the widget element and
 its children. That way you can have several widgets on the page listening
