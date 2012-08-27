@@ -193,7 +193,7 @@ define(function() {
 
 The result looks like this:
 
-![](img/question1.png)
+![](http://apres.github.com/doc/img/question1.png)
 
 ### Wiring Up Events
 
@@ -262,7 +262,7 @@ define(function() {
 });
 ```
 
-![](img/question2.png)
+![](http://apres.github.com/doc/img/question2.png)
 
 ### Widget Parameters
 
