@@ -1,6 +1,6 @@
-# Widgets #
+# Apres Widgets #
 
-Apres widgets allow dynamic behavior to be attached to DOM elements on a page.
+Widgets allow dynamic behavior to be attached to DOM elements on a page.
 Widgets encapsulate dynamic logic and presentation in a reusable way. Widgets
 can be attached directly to an element by adding some attributes to its html
 tag:
@@ -16,9 +16,10 @@ find all of the page elements with widgets as efficiently as possible.  Note
 that is it fine for the widget element to declare other classes as well so
 long as one of them is `"widget"`.
 
-The second `data-widget` attribute declares the widget module. This is a
-requirejs module path. This module is loaded on demand and used to construct
-the widget instance. The instance is then attached to the DOM element.
+The second `data-widget` attribute declares the widget [module](modules.md).
+This is a requirejs module path. This module is loaded on demand and used to
+construct the widget instance. The instance is then attached to the DOM
+element.
 
 Some widgets can accept additional parameters. The `markdown` widget used
 above can accept a `src` parameter that allows you to specify an external
@@ -110,8 +111,8 @@ define(function() {
 ```
 
 Create a directory called `widgets` in the root directory of your Apres app
-(to create an app see the [quick start](quickstart.md)), and save this as a
-file named `hello.js` in the widgets directory.
+(to create an app see the [Apres quick start](quickstart.md)), and save this
+as a file named `hello.js` in the widgets directory.
 
 To use your new widget, add this tag to an apres-enabled page:
 
@@ -360,4 +361,8 @@ The remainder of the widget code remains the same:
   return QuestionWidget;
 });
 ```
+
+Further reading:
+
+* [Apres modules](modules.md)
 
