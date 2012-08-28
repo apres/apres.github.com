@@ -362,7 +362,7 @@ The remainder of the widget code remains the same:
 });
 ```
 
-Further reading:
+## Further reading
 
 * [Apres modules](modules.md)
 
