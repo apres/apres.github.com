@@ -171,5 +171,7 @@ some other examples you can look at to learn more about its capabilities:
 
 ## Further reading
 
+* [Apres Overview](overview.md)
+
 * [Apres Widgets](widgets.md)
 
