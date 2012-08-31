@@ -169,4 +169,7 @@ some other examples you can look at to learn more about its capabilities:
 
 - [Pager Widget](http://apres.github.com/demo/pager.html)
 
+## Further reading
+
+* [Apres Widgets](widgets.md)
 
