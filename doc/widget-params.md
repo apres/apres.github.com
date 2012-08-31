@@ -50,45 +50,62 @@ documentation.
 The following parameter type converters are supplied by Apres for widget
 parameters. Async parameter types support the `deferred` property:
 
-**type:** string **async:** no
+**type:** string<br>
+**async:** no<br>
 This is the default type if none is specified. It performs no actual
 conversion to the attribute value.
 
-**type:** int **async:** no
+**type:** int<br>
+**async:** no<br>
 Converts the value to an integer.
 
-**type:** float **async:** no
+**type:** float<br>
+**async:** no<br>
 Converts the value to a Javascript float.
 
-**type:** bool **async:** no
+**type:** bool<br>
+**async:** no<br>
 Converts the value to `true` or `false`. The case-insensitive attribute values
 `"1"`, `"true"`, and `"yes"` convert to `true`. `"0"`, `"false", and
 `"no"` convert to `false`.
 
-**type:** selector **async:** no
+**type:** selector<br>
+**async:** no<br>
 Use the value as an element selector. Passes the result of `$(value)` to
 the widget.
 
-**type:** widget **async:** yes
+**type:** widget<br>
+**async:** yes<br>
 As with *selector* the value is an element selector, but here the element is
 assumed to have a widget attached to it. The selected element's widget is
 provided when it is ready. This is useful for widgets to reference each
 other.
 
-**type:** scriptSrc **async:** yes
+**type:** scriptSrc<br>
+**async:** yes<br>
 The value is interpreted as a script URI. The script is loaded as a module
 with requirejs and the resulting object is supplied as the parameter value.
 
-**type:** textSrc **async:** yes
+**type:** textSrc<br>
+**async:** yes<br>
 The value is interpreted as a URI to a text resource. The text resource is
 loaded and its contents are supplied as the parameter value. Note this
 URI is subject to the browser's cross-origin rules.
 
-**type:** jsonSrc **async:** yes
+**type:** jsonSrc<br>
+**async:** yes<br>
 Similar to *textSrc* except the resource is processed as json. The resulting
 object is supplied as the parameter value.
 
-**type:** json **async:** no
+**type:** json<br>
+**async:** no<br>
 The value is parsed as a JSON string. The resulting object is supplied as the
 parameter value.
 
+## Conversion Error Handling
+
+If a widget parameter value supplied in an attribute cannot be converted to
+the type designated by the widget that is considered an illegal value.
+Providing an illegal value will not provoke an exception, but it will produce
+a console log entry for debugging. No value is passed to the widget for
+parameters will illegal values.
