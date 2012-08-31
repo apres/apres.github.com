@@ -364,5 +364,7 @@ The remainder of the widget code remains the same:
 
 ## Further reading
 
+* [Widget Parameters](widget-params.md)
+
 * [Apres modules](modules.md)
 
